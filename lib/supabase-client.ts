@@ -1,5 +1,4 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { Database } from '../types/database'
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -7,7 +6,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // Client for browser/client-side usage
-export const supabase: SupabaseClient<Database> = createClient<Database>(
+export const supabase: SupabaseClient = createClient(
   supabaseUrl,
   supabaseAnonKey,
   {
@@ -20,7 +19,7 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
 )
 
 // Client for server-side usage (admin operations)
-export const supabaseAdmin: SupabaseClient<Database> = createClient<Database>(
+export const supabaseAdmin: SupabaseClient = createClient(
   supabaseUrl,
   supabaseServiceKey,
   {

@@ -1,11 +1,11 @@
 import { supabase, supabaseAdmin } from './supabase-client'
-import { Database, IDE, DocChunk, UserPrompt, ChatHistory } from '../types/database'
+import type { DatabaseInsert, DatabaseUpdate, IDE, DocChunk, UserPrompt, ChatHistory } from '../types/database'
 
 // Database utility functions for common operations
 
 // IDE Management
 export class IDEManager {
-  static async createIDE(ideData: Database['Insert']['ides']) {
+  static async createIDE(ideData: DatabaseInsert['ides']) {
     const { data, error } = await supabaseAdmin
       .from('ides')
       .insert(ideData)
@@ -15,7 +15,7 @@ export class IDEManager {
     return { data, error }
   }
 
-  static async updateIDE(id: string, updateData: Database['Update']['ides']) {
+  static async updateIDE(id: string, updateData: DatabaseUpdate['ides']) {
     const { data, error } = await supabaseAdmin
       .from('ides')
       .update(updateData)
@@ -51,7 +51,7 @@ export class IDEManager {
 
 // Document Chunk Management
 export class DocChunkManager {
-  static async createDocChunk(chunkData: Database['Insert']['doc_chunks']) {
+  static async createDocChunk(chunkData: DatabaseInsert['doc_chunks']) {
     const { data, error } = await supabaseAdmin
       .from('doc_chunks')
       .insert(chunkData)
@@ -61,7 +61,7 @@ export class DocChunkManager {
     return { data, error }
   }
 
-  static async bulkCreateDocChunks(chunks: Database['Insert']['doc_chunks'][]) {
+  static async bulkCreateDocChunks(chunks: DatabaseInsert['doc_chunks'][]) {
     const { data, error } = await supabaseAdmin
       .from('doc_chunks')
       .insert(chunks)
@@ -185,9 +185,13 @@ export class ChatHistoryManager {
     if (error) return { data: null, error }
     
     // Process data to get message counts
-    const processedData = data?.map(chat => ({
+    const processedData = data?.map((chat: any) => ({
       ...chat,
-      message_count: Array.isArray(chat.messages) ? chat.messages.length : 0
+      message_count: Array.isArray(chat.messages)
+        ? chat.messages.length
+        : Array.isArray(chat.message_count)
+          ? chat.message_count.length
+          : chat.message_count ?? 0
     }))
     
     return { data: processedData, error: null }
@@ -259,14 +263,25 @@ export class AnalyticsManager {
       .from('user_prompts')
       .select(`
         ide_id,
-        prompt_count:count,
         ide:ides(name, docs_url)
       `)
-      .group('ide_id')
-      .order('prompt_count', { ascending: false })
-      .limit(limit)
     
-    return { data, error }
+    if (error || !data) return { data: null, error }
+    
+    const grouped = data.reduce((acc, curr) => {
+      const ideId = curr.ide_id
+      if (!acc[ideId]) {
+        acc[ideId] = { ide_id: ideId, count: 0, ide: curr.ide }
+      }
+      acc[ideId].count++
+      return acc
+    }, {} as Record<string, { ide_id: string; count: number; ide: any }>)
+    
+    const sorted = Object.values(grouped)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit)
+    
+    return { data: sorted, error: null }
   }
 
   static async getSearchAnalytics(daysBack = 30) {
