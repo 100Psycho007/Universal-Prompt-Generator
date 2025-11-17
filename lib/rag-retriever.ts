@@ -245,6 +245,8 @@ export class RAGRetriever {
         docs_url: item.ide.docs_url,
         status: 'active',
         manifest: null,
+        created_by: null,
+        updated_by: null,
         created_at: '',
         updated_at: ''
       } : undefined

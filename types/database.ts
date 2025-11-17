@@ -14,6 +14,8 @@ export interface IDE {
   docs_url: string | null
   status: string
   manifest: Json | null
+  created_by: string | null
+  updated_by: string | null
   created_at: string
   updated_at: string
 }
@@ -35,6 +37,8 @@ export interface User {
   email: string | null
   profile: Json
   preferences: Json
+  role: string
+  is_guest: boolean
   created_at: string
 }
 
@@ -72,6 +76,28 @@ export interface AdminLog {
   timestamp: string
 }
 
+export interface IngestStatus {
+  id: string
+  ide_id: string
+  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  started_at: string | null
+  completed_at: string | null
+  error_message: string | null
+  chunks_processed: number
+  created_at: string
+  updated_at: string
+}
+
+export interface APIUsageStat {
+  id: string
+  user_id: string | null
+  endpoint: string
+  method: string
+  status_code: number
+  response_time_ms: number
+  created_at: string
+}
+
 // Database tables union type
 export type DatabaseTable = 
   | 'ides'
@@ -80,6 +106,8 @@ export type DatabaseTable =
   | 'user_prompts'
   | 'chat_history'
   | 'admin_logs'
+  | 'ingest_status'
+  | 'api_usage_stats'
 
 // Insert types (for creating new records)
 export interface IDEInsert {
@@ -87,6 +115,8 @@ export interface IDEInsert {
   docs_url?: string | null
   status?: string
   manifest?: Json | null
+  created_by?: string | null
+  updated_by?: string | null
 }
 
 export interface DocChunkInsert {
@@ -103,6 +133,8 @@ export interface UserInsert {
   email?: string | null
   profile?: Json
   preferences?: Json
+  role?: string
+  is_guest?: boolean
 }
 
 export interface UserPromptInsert {
@@ -131,6 +163,8 @@ export interface IDEUpdate {
   docs_url?: string | null
   status?: string
   manifest?: Json | null
+  created_by?: string | null
+  updated_by?: string | null
 }
 
 export interface DocChunkUpdate {
@@ -146,6 +180,8 @@ export interface UserUpdate {
   email?: string | null
   profile?: Json
   preferences?: Json
+  role?: string
+  is_guest?: boolean
 }
 
 export interface UserPromptUpdate {
@@ -174,6 +210,8 @@ export type DatabaseRow = {
   user_prompts: UserPrompt
   chat_history: ChatHistory
   admin_logs: AdminLog
+  ingest_status: IngestStatus
+  api_usage_stats: APIUsageStat
 }
 
 export type DatabaseInsert = {
@@ -183,6 +221,8 @@ export type DatabaseInsert = {
   user_prompts: UserPromptInsert
   chat_history: ChatHistoryInsert
   admin_logs: AdminLogInsert
+  ingest_status: IngestStatus
+  api_usage_stats: APIUsageStat
 }
 
 export type DatabaseUpdate = {
@@ -192,6 +232,8 @@ export type DatabaseUpdate = {
   user_prompts: UserPromptUpdate
   chat_history: ChatHistoryUpdate
   admin_logs: AdminLogUpdate
+  ingest_status: IngestStatus
+  api_usage_stats: APIUsageStat
 }
 
 // Utility types for common operations
