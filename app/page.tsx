@@ -60,9 +60,17 @@ export default function Home() {
                 </Link>
               )}
               {!isGuest && (
-                <div className="text-gray-300">
-                  Welcome, {userProfile?.fullName || userProfile?.email}!
-                </div>
+                <>
+                  <Link
+                    href="/chat"
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Chat
+                  </Link>
+                  <div className="text-gray-300">
+                    Welcome, {userProfile?.fullName || userProfile?.email}!
+                  </div>
+                </>
               )}
               {isGuest ? (
                 <div className="flex gap-2">
@@ -131,12 +139,20 @@ export default function Home() {
                 )}
                 <p className="text-gray-400 text-sm">Status: {ide.status}</p>
                 {!isGuest && (
-                  <button
-                    onClick={() => router.push(`/ide/${ide.id}`)}
-                    className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium"
-                  >
-                    View Details
-                  </button>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => router.push(`/chat?ide=${ide.id}`)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium"
+                    >
+                      Chat
+                    </button>
+                    <button
+                      onClick={() => router.push(`/ide/${ide.id}`)}
+                      className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm font-medium"
+                    >
+                      Details
+                    </button>
+                  </div>
                 )}
               </div>
             ))

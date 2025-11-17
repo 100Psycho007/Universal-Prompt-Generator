@@ -76,12 +76,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase!.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user)
         setIsGuest(false)
         
-        const { data: profile } = await supabase
+        const { data: profile } = await supabase!
           .from('users')
           .select('*')
           .eq('id', session.user.id)
