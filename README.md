@@ -8,6 +8,7 @@ This project contains the complete database schema and utilities for the Univers
 - **Vector Search**: pgvector integration for semantic search on documentation
 - **RAG Chat System**: Conversational AI assistant with retrieval-augmented generation
 - **Multi-turn Conversations**: Chat history persistence and context-aware responses
+- **Automated Maintenance**: Scheduled cron jobs for weekly doc updates, vector cleanup, log archival, and manifest validation
 - **Row Level Security**: RLS policies for secure user data access
 - **TypeScript Types**: Full type definitions for all database tables
 - **Supabase Client**: Pre-configured client with helper functions
@@ -85,6 +86,31 @@ npm run db:seed
 ```bash
 npm run db:generate-types
 ```
+
+### Cron Jobs Setup
+
+The application includes automated maintenance tasks via Vercel Cron Jobs:
+
+1. Apply the cron jobs migration:
+```bash
+psql $DATABASE_URL -f migrations/006_cron_jobs_support.sql
+```
+
+2. Set the cron secret in your environment:
+```bash
+CRON_SECRET=your-secure-random-token
+```
+
+3. Deploy to Vercel to activate scheduled jobs:
+```bash
+vercel --prod
+```
+
+See [docs/CRON_JOBS.md](docs/CRON_JOBS.md) for detailed documentation on:
+- Weekly documentation re-crawl (Monday 2 AM UTC)
+- Weekly vector database cleanup (Sunday 3 AM UTC)
+- Daily log archival (Daily 1 AM UTC)
+- Monthly manifest validation (1st of month, 4 AM UTC)
 
 ## Usage
 
