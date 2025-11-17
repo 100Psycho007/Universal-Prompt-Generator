@@ -16,6 +16,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "cheerio": "^1.0.0-rc.12",
+    "robots-parser": "^3.0.1",
+    "turndown": "^7.1.2",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,6 +28,7 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/turndown": "^5.0.4",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.0"
   },

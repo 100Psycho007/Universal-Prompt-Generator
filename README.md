@@ -180,6 +180,60 @@ After modifying the database schema, regenerate TypeScript types:
 npm run db:generate-types
 ```
 
+## Documentation Crawler
+
+The documentation crawler ingests IDE docs into the `doc_chunks` table.
+
+### Features
+
+- Recursive crawling with configurable depth
+- Respects robots.txt and rate limits (750ms-2000ms between requests)
+- Supports HTML, Markdown, and plain text
+- Version detection from URLs and content
+- Graceful error handling with detailed stats
+- Skips non-documentation pages (blog, pricing, legal)
+
+### Usage
+
+Trigger a crawl via HTTP:
+
+```bash
+curl -X POST http://localhost:3000/api/ingestIDE \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ideName": "Cursor",
+    "seedUrls": ["https://docs.cursor.com"],
+    "maxPages": 50,
+    "maxDepth": 3
+  }'
+```
+
+Or programmatically:
+
+```typescript
+import { crawlDocumentation } from '@/lib/crawler'
+
+const stats = await crawlDocumentation(
+  'https://docs.cursor.com',
+  ['https://docs.cursor.com'],
+  ideId,
+  undefined,
+  { maxPages: 50, maxDepth: 3 }
+)
+
+console.log(`Stored ${stats.storedChunks} chunks`)
+```
+
+### Testing
+
+Run the crawler test suite:
+
+```bash
+npx tsx scripts/test-crawler.ts
+```
+
+See `docs/CRAWLER.md` for comprehensive documentation.
+
 ## Security Considerations
 
 - All user data is protected by Row Level Security
@@ -187,10 +241,12 @@ npm run db:generate-types
 - Use service role key only in server-side code
 - Validate all user inputs before database operations
 - Consider rate limiting for API endpoints
+- Documentation crawler respects robots.txt and throttles requests
 
 ## Performance
 
 - Vector indexes configured for efficient similarity search
+- Documentation crawler enforces per-host rate limits with exponential backoff
 - Database indexes on foreign keys and timestamp columns
 - Consider connection pooling for high-traffic applications
 - Monitor query performance and optimize as needed

@@ -56,6 +56,17 @@ INSERT INTO ides (name, docs_url, status, manifest) VALUES
     }'::jsonb
 ),
 (
+    'Cody',
+    'https://docs.sourcegraph.com/cody',
+    'active',
+    '{
+        "description": "Sourcegraph AI coding assistant with code graph context",
+        "language": "multiple",
+        "category": "assistant",
+        "features": ["context-aware", "code-search", "editor-integrations"]
+    }'::jsonb
+),
+(
     'Tabnine',
     'https://docs.tabnine.com',
     'active',
