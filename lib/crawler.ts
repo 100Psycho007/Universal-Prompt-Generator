@@ -2,7 +2,8 @@ import robotsParser from 'robots-parser'
 import { URLNormalizer } from './url-normalizer'
 import { DocumentParser, ParsedDocument } from './parser'
 import { DocChunkManager } from './db-utils'
-import { DocChunkInsert } from '../types/database'
+import { chunkDocument } from './chunker'
+import type { DocChunkInsert } from '../types/database'
 import * as cheerio from 'cheerio'
 
 const NON_DOC_URL_PATTERNS = [
@@ -44,6 +45,7 @@ export interface CrawlResult {
   textSample?: string
   section?: string
   version?: string
+  chunkCount?: number
   error?: string
   statusCode?: number
   contentType?: string
@@ -191,20 +193,33 @@ export class DocumentCrawler {
 
       const detectedVersion = version || this.detectVersion(url, parsed, rawContent)
 
-      const chunkData: DocChunkInsert = {
-        ide_id: ideId,
+      const chunkResults = chunkDocument({
+        ideId,
         text: contentText,
-        source_url: url,
+        sourceUrl: url,
         section: parsed.section || parsed.title,
         version: detectedVersion
+      })
+
+      if (chunkResults.length === 0) {
+        this.stats.skippedPages++
+        return { url, success: false, error: 'No chunks generated from content' }
       }
 
-      const { error: insertError } = await DocChunkManager.createDocChunk(chunkData)
+      const chunkPayload: DocChunkInsert[] = chunkResults.map(({ ide_id, text, source_url, section, version: chunkVersion }) => ({
+        ide_id,
+        text,
+        source_url,
+        section,
+        version: chunkVersion
+      }))
+
+      const { error: insertError } = await DocChunkManager.bulkCreateDocChunks(chunkPayload)
       if (insertError) {
-        throw new Error(insertError.message || 'Failed to store document chunk')
+        throw new Error(insertError.message || 'Failed to store document chunks')
       }
 
-      this.stats.storedChunks++
+      this.stats.storedChunks += chunkPayload.length
       this.stats.successfulPages++
 
       if (depth < this.options.maxDepth && isHtml) {
@@ -223,9 +238,10 @@ export class DocumentCrawler {
         url,
         success: true,
         title: parsed.title,
-        textSample: this.sampleText(contentText),
+        textSample: this.sampleText(chunkPayload[0]?.text ?? contentText),
         section: parsed.section,
         version: detectedVersion,
+        chunkCount: chunkPayload.length,
         statusCode: response.status,
         contentType
       }

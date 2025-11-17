@@ -17,11 +17,12 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "cheerio": "^1.0.0-rc.12",
-    "robots-parser": "^3.0.1",
-    "turndown": "^7.1.2",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "robots-parser": "^3.0.1",
+    "tiktoken": "^1.0.22",
+    "turndown": "^7.1.2",
     "typescript": "^5.3.0"
   },
   "devDependencies": {
