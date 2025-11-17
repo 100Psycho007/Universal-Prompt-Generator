@@ -130,7 +130,9 @@ export default async function handler(
     const failedUpdates: Array<{ id: string; error: string }> = []
     let embeddedCount = 0
 
-    for (const [chunkId, embedding] of embeddingMap.entries()) {
+    const embeddingEntries = Array.from(embeddingMap.entries())
+    for (let i = 0; i < embeddingEntries.length; i++) {
+      const [chunkId, embedding] = embeddingEntries[i]
       try {
         const { data: updated, error: updateError } = await DocChunkManager.updateEmbedding(chunkId, embedding)
         if (updateError || !updated) {
