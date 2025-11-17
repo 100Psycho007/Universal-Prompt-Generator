@@ -4,7 +4,12 @@ import { crawlDocumentation } from '../lib/crawler'
 async function crawlCursor() {
   console.log('🔍 Starting Cursor documentation crawl...\n')
 
-  const { data: ide, error } = await supabaseAdmin
+  if (!supabaseAdmin) {
+    console.error('❌ Error: Supabase admin client not initialized')
+    process.exit(1)
+  }
+
+  const { data: ide, error } = await (supabaseAdmin as any)
     .from('ides')
     .select('id, name, docs_url')
     .eq('name', 'Cursor')
@@ -72,7 +77,7 @@ async function crawlCursor() {
       }
     }
 
-    const { count } = await supabaseAdmin
+    const { count } = await (supabaseAdmin as any)
       .from('doc_chunks')
       .select('*', { count: 'exact', head: true })
       .eq('ide_id', ide.id)
