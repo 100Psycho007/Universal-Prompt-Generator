@@ -12,6 +12,7 @@ A robust web scraper for IDE documentation with error handling and version track
 - **Version Detection**: Extracts version from URLs and content
 - **Graceful Failures**: Continues crawling on errors with detailed logging
 - **Metadata Extraction**: Captures title, section, source URL, and version
+- **Token-Aware Chunking**: Splits documentation into 300-1000 token segments with 100-token overlap
 - **Content Filtering**: Automatically skips blog posts, pricing, and non-doc pages
 
 ## Architecture
@@ -31,14 +32,19 @@ A robust web scraper for IDE documentation with error handling and version track
    - Extracts metadata (title, section, author, etc.)
    - Removes navigation, headers, footers
 
-3. **Crawler** (`lib/crawler.ts`)
+3. **Document Chunker** (`lib/chunker.ts`)
+   - Uses tiktoken to tokenize content
+   - Produces 300-1000 token chunks with 100-token overlap
+   - Preserves section boundaries and metadata for each chunk
+
+4. **Crawler** (`lib/crawler.ts`)
    - Manages crawl queue with BFS traversal
    - Handles rate limiting per host
    - Respects robots.txt crawl delays
    - Implements retry logic with exponential backoff
-   - Stores content in doc_chunks table
+   - Stores chunked content in the `doc_chunks` table
 
-4. **API Endpoint** (`pages/api/ingestIDE.ts`)
+5. **API Endpoint** (`pages/api/ingestIDE.ts`)
    - POST endpoint to trigger crawls
    - Accepts IDE name or ID
    - Configurable options (maxPages, maxDepth, etc.)
@@ -248,7 +254,7 @@ CREATE TABLE doc_chunks (
 - [ ] Puppeteer integration for JS-rendered content
 - [ ] Parallel crawling with concurrency limits
 - [ ] Content deduplication across versions
-- [ ] Automatic chunking for large documents
+- [x] Token-aware chunking for large documents
 - [ ] Screenshot capture for visual docs
 - [ ] Link validation and broken link detection
 

@@ -234,6 +234,21 @@ npx tsx scripts/test-crawler.ts
 
 See `docs/CRAWLER.md` for comprehensive documentation.
 
+### Embedding Pipeline
+
+After documentation chunks are stored, generate embeddings via the server-side endpoint:
+
+```bash
+curl -X POST http://localhost:3000/api/embedChunks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ideId": "cursor-uuid",
+    "limit": 250
+  }'
+```
+
+The embedding pipeline processes chunks in batches of 25, caches previously embedded content, and prioritizes the OpenRouter embeddings API with an automatic fallback to OpenAI's `text-embedding-3-small` model. Failed embeddings are returned in the response so they can be queued for retry.
+
 ## Security Considerations
 
 - All user data is protected by Row Level Security
