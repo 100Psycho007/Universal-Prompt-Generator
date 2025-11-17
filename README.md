@@ -6,6 +6,8 @@ This project contains the complete database schema and utilities for the Univers
 
 - **Complete Database Schema**: Tables for IDEs, documentation chunks, users, prompts, chat history, and admin logs
 - **Vector Search**: pgvector integration for semantic search on documentation
+- **RAG Chat System**: Conversational AI assistant with retrieval-augmented generation
+- **Multi-turn Conversations**: Chat history persistence and context-aware responses
 - **Row Level Security**: RLS policies for secure user data access
 - **TypeScript Types**: Full type definitions for all database tables
 - **Supabase Client**: Pre-configured client with helper functions
@@ -272,6 +274,58 @@ The embedding pipeline processes chunks in batches of 25, caches previously embe
 2. Apply migrations to production Supabase instance
 3. Generate production types
 4. Deploy application
+
+## RAG Chat System
+
+The platform includes a conversational AI assistant that answers questions about IDE documentation using Retrieval-Augmented Generation (RAG).
+
+### Key Features
+
+- **Vector Similarity Search**: Retrieves top-k most relevant documentation chunks
+- **Context Injection**: Embeds retrieved chunks into LLM prompts for accurate responses
+- **Multi-turn Conversations**: Maintains conversation history and context
+- **Citation Tracking**: Shows which documentation sources were used
+- **Rate Limiting**: 10 messages per user per minute
+- **LLM Integration**: OpenRouter (primary) with OpenAI fallback
+
+### API Endpoint
+
+```
+POST /api/chat
+```
+
+### Usage Example
+
+```javascript
+const response = await fetch('/api/chat', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + userToken
+  },
+  body: JSON.stringify({
+    ide_id: 'vscode',
+    messages: [
+      { role: 'user', content: 'How do I create a new extension?' }
+    ]
+  })
+})
+
+const data = await response.json()
+console.log(data.response)
+console.log(data.sources) // Documentation citations
+```
+
+### Configuration
+
+Set these environment variables:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+```
+
+For detailed API documentation, see [docs/chat-api.md](docs/chat-api.md).
 
 ## Contributing
 
