@@ -1,0 +1,215 @@
+# Universal IDE Database Schema
+
+This project contains the complete database schema and utilities for the Universal IDE platform, built with Supabase and PostgreSQL with pgvector support.
+
+## Features
+
+- **Complete Database Schema**: Tables for IDEs, documentation chunks, users, prompts, chat history, and admin logs
+- **Vector Search**: pgvector integration for semantic search on documentation
+- **Row Level Security**: RLS policies for secure user data access
+- **TypeScript Types**: Full type definitions for all database tables
+- **Supabase Client**: Pre-configured client with helper functions
+- **Seed Data**: Initial IDE data populated automatically
+
+## Database Schema
+
+### Tables
+
+1. **ides** - IDE information and metadata
+2. **doc_chunks** - Documentation chunks with vector embeddings
+3. **users** - User profiles and preferences
+4. **user_prompts** - User-generated prompts and AI responses
+5. **chat_history** - Chat conversation history
+6. **admin_logs** - Administrative action logs
+
+### Security
+
+- Row Level Security (RLS) enabled on all user tables
+- Users can only access their own data
+- Authenticated users can read IDE and documentation data
+- Service role required for admin operations
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+ 
+- Supabase CLI
+- PostgreSQL with pgvector extension
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd universal-ide-database
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Copy environment variables:
+```bash
+cp .env.example .env.local
+```
+
+4. Configure your Supabase project in `.env.local`:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
+
+### Database Setup
+
+1. Start local Supabase:
+```bash
+npx supabase start
+```
+
+2. Apply migrations:
+```bash
+npm run db:migrate
+```
+
+3. Seed initial data:
+```bash
+npm run db:seed
+```
+
+4. Generate TypeScript types:
+```bash
+npm run db:generate-types
+```
+
+## Usage
+
+### Basic Operations
+
+```typescript
+import { supabase, getIDEs, createUserPrompt } from './lib/supabase-client'
+
+// Get all active IDEs
+const { data: ides, error } = await getIDEs()
+
+// Create a user prompt
+const { data: prompt, error } = await createUserPrompt({
+  user_id: 'user-uuid',
+  ide_id: 'ide-uuid',
+  task_description: 'Create a React component',
+  raw_input: 'make a button',
+  generated_prompt: 'Create a reusable React button component...'
+})
+```
+
+### Vector Search
+
+```typescript
+import { vectorSearch } from './lib/supabase-client'
+
+// Search documentation using embeddings
+const { data: results, error } = await vectorSearch({
+  embedding: [0.1, 0.2, 0.3, ...], // Your embedding vector
+  ideId: 'cursor-uuid',
+  limit: 10,
+  threshold: 0.7
+})
+```
+
+### Real-time Subscriptions
+
+```typescript
+import { subscribeToChatHistory } from './lib/supabase-client'
+
+// Subscribe to chat updates
+const subscription = subscribeToChatHistory(chatId, (payload) => {
+  console.log('Chat updated:', payload.new)
+})
+```
+
+## File Structure
+
+```
+├── migrations/
+│   ├── 001_initial_schema.sql    # Core schema and indexes
+│   ├── 002_rls_policies.sql      # Row Level Security policies
+│   └── 003_seed_data.sql         # Initial IDE data
+├── types/
+│   └── database.ts               # TypeScript type definitions
+├── lib/
+│   └── supabase-client.ts        # Supabase client and utilities
+├── supabase/
+│   └── config.toml               # Supabase configuration
+├── .env.example                  # Environment variables template
+├── package.json                  # Dependencies and scripts
+└── README.md                     # This file
+```
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run type-check` - Run TypeScript type checking
+- `npm run db:migrate` - Apply database migrations
+- `npm run db:reset` - Reset database
+- `npm run db:seed` - Seed initial data
+- `npm run db:generate-types` - Generate TypeScript types from schema
+
+### Adding New Migrations
+
+1. Create a new SQL file in `migrations/` with a sequential number:
+```
+migrations/004_new_feature.sql
+```
+
+2. Write your SQL migration code
+
+3. Apply the migration:
+```bash
+npm run db:migrate
+```
+
+### Updating Types
+
+After modifying the database schema, regenerate TypeScript types:
+```bash
+npm run db:generate-types
+```
+
+## Security Considerations
+
+- All user data is protected by Row Level Security
+- API keys should never be exposed on the client side
+- Use service role key only in server-side code
+- Validate all user inputs before database operations
+- Consider rate limiting for API endpoints
+
+## Performance
+
+- Vector indexes configured for efficient similarity search
+- Database indexes on foreign keys and timestamp columns
+- Consider connection pooling for high-traffic applications
+- Monitor query performance and optimize as needed
+
+## Deployment
+
+1. Configure production environment variables
+2. Apply migrations to production Supabase instance
+3. Generate production types
+4. Deploy application
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Add tests if applicable
+4. Update documentation
+5. Submit a pull request
+
+## License
+
+[Your License Here]
