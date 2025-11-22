@@ -1,12 +1,27 @@
 import { supabase, supabaseAdmin } from './supabase-client'
 import type { DatabaseInsert, DatabaseUpdate, IDE, DocChunk, UserPrompt, ChatHistory } from '../types/database'
 
+const getSupabase = () => {
+  if (!supabase) {
+    throw new Error('Supabase client is not initialized')
+  }
+  return supabase
+}
+
+const getSupabaseAdmin = () => {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not initialized')
+  }
+  return supabaseAdmin
+}
+
 // Database utility functions for common operations
 
 // IDE Management
 export class IDEManager {
   static async createIDE(ideData: DatabaseInsert['ides']) {
-    const { data, error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
       .from('ides')
       .insert(ideData)
       .select()
@@ -16,7 +31,8 @@ export class IDEManager {
   }
 
   static async updateIDE(id: string, updateData: DatabaseUpdate['ides']) {
-    const { data, error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
       .from('ides')
       .update(updateData)
       .eq('id', id)
@@ -27,7 +43,8 @@ export class IDEManager {
   }
 
   static async deleteIDE(id: string) {
-    const { error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { error } = await admin
       .from('ides')
       .delete()
       .eq('id', id)
@@ -36,7 +53,8 @@ export class IDEManager {
   }
 
   static async getIDEsWithDocChunkCount() {
-    const { data, error } = await supabase
+    const client = getSupabase()
+    const { data, error } = await client
       .from('ides')
       .select(`
         *,
@@ -52,7 +70,8 @@ export class IDEManager {
 // Document Chunk Management
 export class DocChunkManager {
   static async createDocChunk(chunkData: DatabaseInsert['doc_chunks']) {
-    const { data, error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
       .from('doc_chunks')
       .insert(chunkData)
       .select()
@@ -62,7 +81,8 @@ export class DocChunkManager {
   }
 
   static async bulkCreateDocChunks(chunks: DatabaseInsert['doc_chunks'][]) {
-    const { data, error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin
       .from('doc_chunks')
       .insert(chunks)
       .select()
@@ -71,7 +91,8 @@ export class DocChunkManager {
   }
 
   static async updateEmbedding(chunkId: string, embedding: number[]) {
-    const { data, error } = await supabaseAdmin.rpc('update_doc_chunk_embedding', {
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin.rpc('update_doc_chunk_embedding', {
       chunk_id: chunkId,
       new_embedding: embedding
     })
@@ -80,7 +101,8 @@ export class DocChunkManager {
   }
 
   static async getDocChunksWithoutEmbedding(ideId?: string) {
-    let query = supabaseAdmin
+    const admin = getSupabaseAdmin()
+    let query = admin
       .from('doc_chunks')
       .select('*')
       .is('embedding', null)
@@ -95,7 +117,8 @@ export class DocChunkManager {
   }
 
   static async deleteDocChunksByIDE(ideId: string) {
-    const { error } = await supabaseAdmin
+    const admin = getSupabaseAdmin()
+    const { error } = await admin
       .from('doc_chunks')
       .delete()
       .eq('ide_id', ideId)
@@ -107,7 +130,7 @@ export class DocChunkManager {
 // User Prompt Management
 export class UserPromptManager {
   static async getUserPromptStats(userId: string, daysBack = 30) {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('user_prompts')
       .select('created_at, ide_id')
       .eq('user_id', userId)
@@ -152,7 +175,7 @@ export class UserPromptManager {
   }
 
   static async searchUserPrompts(userId: string, query: string) {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('user_prompts')
       .select(`
         *,
@@ -169,7 +192,7 @@ export class UserPromptManager {
 // Chat History Management
 export class ChatHistoryManager {
   static async getChatSummary(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('chat_history')
       .select(`
         id,
@@ -198,7 +221,7 @@ export class ChatHistoryManager {
   }
 
   static async exportChatHistory(userId: string, format: 'json' | 'csv' = 'json') {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('chat_history')
       .select(`
         *,
@@ -226,7 +249,7 @@ export class ChatHistoryManager {
   }
 
   static async deleteChatHistory(userId: string, chatId?: string) {
-    let query = supabase
+    let query = getSupabase()
       .from('chat_history')
       .delete()
       .eq('user_id', userId)
@@ -244,13 +267,14 @@ export class ChatHistoryManager {
 // Analytics and Reporting
 export class AnalyticsManager {
   static async getPlatformStats() {
-    const { data, error } = await supabaseAdmin.rpc('get_ide_statistics')
+    const admin = getSupabaseAdmin()
+    const { data, error } = await admin.rpc('get_ide_statistics')
     
     return { data, error }
   }
 
   static async getUserActivitySummary(userId: string, daysBack = 30) {
-    const { data, error } = await supabase.rpc('get_user_activity_summary', {
+    const { data, error } = await getSupabase().rpc('get_user_activity_summary', {
       user_id_param: userId,
       days_back: daysBack
     })
@@ -259,7 +283,7 @@ export class AnalyticsManager {
   }
 
   static async getPopularIDEs(limit = 10) {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('user_prompts')
       .select(`
         ide_id,
@@ -287,7 +311,7 @@ export class AnalyticsManager {
   static async getSearchAnalytics(daysBack = 30) {
     // This would require additional logging tables for search queries
     // For now, return a placeholder
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('doc_chunks')
       .select('ide_id, created_at')
       .gte('created_at', new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString())
@@ -308,7 +332,7 @@ export class DatabaseManager {
     
     try {
       // Check vector extension
-      const { data: vectorCheck } = await supabase
+      const { data: vectorCheck } = await getSupabase()
         .from('pg_extension')
         .select('extname')
         .eq('extname', 'vector')
@@ -317,7 +341,7 @@ export class DatabaseManager {
       checks.vectorExtension = !!vectorCheck
       
       // Check RLS status
-      const { data: rlsCheck } = await supabase
+      const { data: rlsCheck } = await getSupabase()
         .from('pg_tables')
         .select('relname, relrowsecurity')
         .in('relname', ['users', 'user_prompts', 'chat_history'])
@@ -325,7 +349,7 @@ export class DatabaseManager {
       checks.rlsEnabled = rlsCheck?.every(table => table.relrowsecurity) || false
       
       // Check indexes
-      const { data: indexCheck } = await supabase
+      const { data: indexCheck } = await getSupabase()
         .from('pg_indexes')
         .select('indexname')
         .in('indexname', [
@@ -338,7 +362,7 @@ export class DatabaseManager {
       checks.indexesExist = (indexCheck?.length || 0) >= 4
       
       // Check functions
-      const { data: functionCheck } = await supabase
+      const { data: functionCheck } = await getSupabase()
         .from('pg_proc')
         .select('proname')
         .in('proname', ['vector_search', 'get_ide_statistics'])
@@ -353,6 +377,7 @@ export class DatabaseManager {
   }
 
   static async optimizeDatabase() {
+    const admin = getSupabaseAdmin()
     const operations = [
       'ANALYZE doc_chunks;',
       'ANALYZE user_prompts;',
@@ -361,11 +386,11 @@ export class DatabaseManager {
       'VACUUM ANALYZE;'
     ]
     
-    const results = []
+    const results: Array<{ operation: string; success: boolean; error: any }> = []
     
     for (const operation of operations) {
       try {
-        const { error } = await supabaseAdmin.rpc('exec_sql', { sql: operation })
+        const { error } = await admin.rpc('exec_sql', { sql: operation })
         results.push({ operation, success: !error, error })
       } catch (err) {
         results.push({ operation, success: false, error: err })
