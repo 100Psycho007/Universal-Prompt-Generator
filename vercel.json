@@ -3,19 +3,19 @@
   "crons": [
   {
     "path": "/api/cron/weekly-recrawl",
-    "schedule": "0 0 2 * * 1"
+    "schedule": "0 2 * * 1"
   },
   {
     "path": "/api/cron/cleanup-vectors",
-    "schedule": "0 0 3 * * 0"
+    "schedule": "0 3 * * 0"
   },
   {
     "path": "/api/cron/archive-logs",
-    "schedule": "0 0 1 * * *"
+    "schedule": "0 1 * * *"
   },
   {
     "path": "/api/cron/validate-manifests",
-    "schedule": "0 0 4 1 * *"
+    "schedule": "0 4 1 * *"
   }
 ],
 "functions": {
