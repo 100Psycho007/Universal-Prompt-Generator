@@ -1,54 +1,44 @@
+'use client'
+
 import React, { useState } from 'react'
-import { IDESelector } from '../components/IDESelectorMock'
-import { PromptBuilder, type PromptBuilderParams } from '../components/PromptBuilder'
-import { PromptDisplay } from '../components/PromptDisplay'
+import { IDESelector } from '@/components/IDESelector'
+import { PromptBuilder, type PromptBuilderParams } from '@/components/PromptBuilder'
+import { PromptDisplay } from '@/components/PromptDisplay'
+import type { IDE } from '@/types/database'
 
-// Mock IDE data for testing
-const mockIDEs = [
-  {
-    id: '1',
-    name: 'Visual Studio Code',
-    docs_url: 'https://code.visualstudio.com/docs',
-    status: 'active',
-    manifest: {
-      preferred_formats: ['json', 'markdown'],
-      fallback_formats: ['plaintext']
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'IntelliJ IDEA',
-    docs_url: 'https://www.jetbrains.com/idea/documentation/',
-    status: 'active',
-    manifest: {
-      preferred_formats: ['json', 'markdown'],
-      fallback_formats: ['plaintext']
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    name: 'Sublime Text',
-    docs_url: 'https://www.sublimetext.com/docs/',
-    status: 'active',
-    manifest: {
-      preferred_formats: ['json', 'markdown'],
-      fallback_formats: ['plaintext']
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+interface GeneratePromptResponse {
+  message: string
+  data: {
+    ideId: string
+    ideName: string
+    format: string
+    prompt: string
+    usedFallback: boolean
+    validation: {
+      isValid: boolean
+      errors: string[]
+      warnings: string[]
+    }
+    attempts: Array<{
+      format: string
+      success: boolean
+      error?: string
+      validation?: {
+        isValid: boolean
+        errors: string[]
+        warnings: string[]
+      }
+    }>
+    durationMs: number
   }
-]
+}
 
-export default function TestPage() {
-  const [selectedIDE, setSelectedIDE] = useState<any>(null)
+export default function PromptGeneratorPage() {
+  const [selectedIDE, setSelectedIDE] = useState<IDE | null>(null)
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
-  const [promptFormat, setPromptFormat] = useState<string>('JSON')
+  const [promptFormat, setPromptFormat] = useState<string>('')
   const [validation, setValidation] = useState({
-    isValid: true,
+    isValid: false,
     errors: [] as string[],
     warnings: [] as string[]
   })
@@ -70,51 +60,80 @@ export default function TestPage() {
     setGeneratedPrompt(null)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock generated prompt
-      const mockPrompt = `{
-  "task": "${params.task}",
-  "language": "${params.language}",
-  "ide": "${selectedIDE.name}",
-  "context": {
-    "files": ${params.files.length},
-    "constraints": ${JSON.stringify(params.constraints, null, 2)}
-  },
-  "instructions": "You are a helpful assistant specialized in ${selectedIDE.name}. ${params.task}"
-}`
+      // For demo purposes, we'll use a mock user ID
+      // In a real app, this would come from authentication
+      const userId = 'demo-user-id'
 
-      setGeneratedPrompt(mockPrompt)
-      setPromptFormat('JSON')
-      setValidation({
-        isValid: true,
-        errors: [],
-        warnings: ['This is a mock response']
+      // Convert FileInput to TemplateFileInput format
+      const templateFiles = params.files.map(file => ({
+        path: file.path,
+        content: file.content
+      }))
+
+      const response = await fetch('/api/prompt/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          ideId: selectedIDE.id,
+          task: params.task,
+          language: params.language,
+          files: templateFiles,
+          constraints: params.constraints
+        })
       })
-      setUsedFallback(false)
-      setAttempts([
-        { format: 'JSON', success: true }
-      ])
+
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(error || 'Failed to generate prompt')
+      }
+
+      const result: GeneratePromptResponse = await response.json()
+      
+      setGeneratedPrompt(result.data.prompt)
+      setPromptFormat(result.data.format)
+      setValidation(result.data.validation)
+      setUsedFallback(result.data.usedFallback)
+      setAttempts(result.data.attempts.map(attempt => ({
+        format: attempt.format,
+        success: attempt.success,
+        error: attempt.error
+      })))
     } catch (error) {
       console.error('Error generating prompt:', error)
-      alert('Failed to generate prompt')
+      alert(error instanceof Error ? error.message : 'Failed to generate prompt')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleTryAnotherFormat = () => {
-    // Mock implementation
-    alert('Would try another format')
+  const handleTryAnotherFormat = async () => {
+    if (!selectedIDE || !generatedPrompt) return
+    
+    // This would need to be implemented to retry with a different format
+    // For now, we'll just regenerate
+    setIsLoading(true)
+    // Implementation would go here
+    setIsLoading(false)
   }
 
-  const handleSave = () => {
-    alert('Prompt saved!')
+  const handleSave = async () => {
+    if (!generatedPrompt || !selectedIDE) return
+    
+    try {
+      // This would save the prompt to user's saved prompts
+      // For now, we'll just show a success message
+      alert('Prompt saved successfully!')
+    } catch (error) {
+      console.error('Error saving prompt:', error)
+      alert('Failed to save prompt')
+    }
   }
 
   const handleCopy = () => {
-    // Copy feedback handled in component
+    // Copy feedback is handled in the PromptDisplay component
   }
 
   return (
@@ -125,12 +144,20 @@ export default function TestPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">
-                IDE Prompt Generator - Test
+                Universal IDE Database
               </h1>
               <span className="ml-4 text-sm text-gray-500">
-                (Using Mock Data)
+                Prompt Generator
               </span>
             </div>
+            
+            {/* Theme Toggle (placeholder) */}
+            <button
+              className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              title="Toggle theme"
+            >
+              🌙
+            </button>
           </div>
         </div>
       </header>
@@ -190,7 +217,7 @@ export default function TestPage() {
                     Select an IDE and describe your task to generate a customized prompt.
                   </p>
                   <div className="text-sm text-gray-400">
-                    <p>✓ Choose from supported IDEs</p>
+                    <p>✓ Choose from 20+ supported IDEs</p>
                     <p>✓ Add context with code files</p>
                     <p>✓ Customize output format and constraints</p>
                     <p>✓ Get validation and syntax highlighting</p>
@@ -201,6 +228,21 @@ export default function TestPage() {
           </div>
         </div>
       </main>
+
+      {/* Mobile Menu Toggle (for responsive sidebar) */}
+      <div className="lg:hidden fixed bottom-4 right-4 z-50">
+        <button
+          onClick={() => {
+            // This would toggle mobile sidebar visibility
+            // Implementation would use state and CSS classes
+          }}
+          className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }

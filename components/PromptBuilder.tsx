@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import type { TemplateFileInput } from '@/lib/template-renderer'
 
 interface PromptBuilderProps {
   selectedIDE: any

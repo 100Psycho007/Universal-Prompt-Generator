@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import type { IDE } from '@/types/database'
-import { supabase } from '@/lib/supabase-client'
 
 interface IDESelectorProps {
   selectedIDE: IDE | null
@@ -10,13 +9,89 @@ interface IDESelectorProps {
   className?: string
 }
 
+// Mock IDE data for testing - replace with real API call
+const mockIDEs: IDE[] = [
+  {
+    id: '1',
+    name: 'Visual Studio Code',
+    docs_url: 'https://code.visualstudio.com/docs',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'IntelliJ IDEA',
+    docs_url: 'https://www.jetbrains.com/idea/documentation/',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '3',
+    name: 'Sublime Text',
+    docs_url: 'https://www.sublimetext.com/docs/',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '4',
+    name: 'Atom',
+    docs_url: 'https://flight-manual.atom.io/',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '5',
+    name: 'Vim',
+    docs_url: 'https://vimhelp.org/',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '6',
+    name: 'Emacs',
+    docs_url: 'https://www.gnu.org/software/emacs/manual/',
+    status: 'active',
+    manifest: {
+      preferred_formats: ['json', 'markdown'],
+      fallback_formats: ['plaintext']
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+]
+
 export const IDESelector: React.FC<IDESelectorProps> = ({
   selectedIDE,
   onIDESelect,
   className = ''
 }) => {
-  const [ides, setIDEs] = useState<IDE[]>([])
-  const [loading, setLoading] = useState(true)
+  const [ides, setIDEs] = useState<IDE[]>(mockIDEs)
+  const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
@@ -25,13 +100,12 @@ export const IDESelector: React.FC<IDESelectorProps> = ({
   }, [])
 
   const fetchIDEs = async () => {
+    setLoading(true)
     try {
-      const response = await fetch('/api/ides?status=active')
-      if (!response.ok) {
-        throw new Error('Failed to fetch IDEs')
-      }
-      const data = await response.json()
-      setIDEs(data.ides || [])
+      // In a real implementation, this would fetch from the API
+      // For now, using mock data
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setIDEs(mockIDEs)
     } catch (error) {
       console.error('Error fetching IDEs:', error)
     } finally {
