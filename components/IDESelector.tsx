@@ -21,7 +21,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   },
   {
     id: '2',
@@ -33,7 +35,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   },
   {
     id: '3',
@@ -45,7 +49,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   },
   {
     id: '4',
@@ -57,7 +63,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   },
   {
     id: '5',
@@ -69,7 +77,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   },
   {
     id: '6',
@@ -81,7 +91,9 @@ const mockIDEs: IDE[] = [
       fallback_formats: ['plaintext']
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    created_by: 'system',
+    updated_by: 'system'
   }
 ]
 
