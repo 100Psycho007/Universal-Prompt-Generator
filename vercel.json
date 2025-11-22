@@ -14,16 +14,6 @@
     "MIXPANEL_TOKEN": "@mixpanel_token",
     "UPTIMEROBOT_HEARTBEAT_URL": "@uptimerobot_heartbeat_url"
   },
-  "preview": {
-    "env": {
-      "NEXT_PUBLIC_APP_URL": "https://staging.universal-ide.vercel.app"
-    }
-  },
-  "dev": {
-    "env": {
-      "NEXT_PUBLIC_APP_URL": "http://localhost:3000"
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/weekly-recrawl",
