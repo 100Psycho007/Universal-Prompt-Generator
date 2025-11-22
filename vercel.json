@@ -1,89 +1,76 @@
 {
   "version": 2,
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "OPENROUTER_API_KEY": "@openrouter_api_key",
-    "NEXT_PUBLIC_APP_URL": "https://universal-ide.vercel.app",
-    "CRON_SECRET": "@cron_secret",
-    "SENTRY_DSN": "@sentry_dsn",
-    "LOGS_API_KEY": "@logs_api_key",
-    "DATADOG_API_KEY": "@datadog_api_key",
-    "MIXPANEL_TOKEN": "@mixpanel_token",
-    "UPTIMEROBOT_HEARTBEAT_URL": "@uptimerobot_heartbeat_url"
-  },
   "crons": [
     {
       "path": "/api/cron/weekly-recrawl",
       "schedule": "0 2 * * 1"
-    },
-    {
-      "path": "/api/cron/cleanup-vectors",
-      "schedule": "0 3 * * 0"
-    },
-    {
-      "path": "/api/cron/archive-logs",
-      "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/validate-manifests",
-      "schedule": "0 4 1 * *"
-    }
-  ],
-  "functions": {
-    "app/api/cron/weekly-recrawl/route.ts": {
-      "maxDuration": 300
-    },
-    "app/api/cron/cleanup-vectors/route.ts": {
-      "maxDuration": 180
-    },
-    "app/api/cron/archive-logs/route.ts": {
-      "maxDuration": 120
-    },
-    "app/api/cron/validate-manifests/route.ts": {
-      "maxDuration": 180
-    },
-    "app/api/chat/route.ts": {
-      "maxDuration": 30
-    },
-    "app/api/prompt/generate/route.ts": {
-      "maxDuration": 30
-    }
-  },
-  "headers": [
-    {
-      "source": "/api/cron/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/health",
-      "destination": "/api/health"
-    }
-  ]
+    
+},
+{
+"path": "/api/cron/cleanup-vectors",
+"schedule": "0 3 * * 0"
+},
+{
+"path": "/api/cron/archive-logs",
+"schedule": "0 1 * * "
+},
+{
+"path": "/api/cron/validate-manifests",
+"schedule": "0 4 1 * "
+}
+],
+"functions": {
+"app/api/cron/weekly-recrawl/route.ts": {
+"maxDuration": 300
+},
+"app/api/cron/cleanup-vectors/route.ts": {
+"maxDuration": 180
+},
+"app/api/cron/archive-logs/route.ts": {
+"maxDuration": 120
+},
+"app/api/cron/validate-manifests/route.ts": {
+"maxDuration": 180
+},
+"app/api/chat/route.ts": {
+"maxDuration": 30
+},
+"app/api/prompt/generate/route.ts": {
+"maxDuration": 30
+}
+},
+"headers": [
+{
+"source": "/api/cron/:path",
+"headers": [
+{
+"key": "Cache-Control",
+"value": "no-store, must-revalidate"
+}
+]
+},
+{
+"source": "/api/(.)",
+"headers": [
+{
+"key": "X-Content-Type-Options",
+"value": "nosniff"
+},
+{
+"key": "X-Frame-Options",
+"value": "DENY"
+},
+{
+"key": "X-XSS-Protection",
+"value": "1; mode=block"
+}
+]
+}
+],
+"rewrites": [
+{
+"source": "/health",
+"destination": "/api/health"
+}
+]
 }
