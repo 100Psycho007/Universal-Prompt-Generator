@@ -2,6 +2,13 @@ import { EmbeddingService } from './embeddings'
 import { supabaseAdmin } from './supabase-client'
 import { VectorSearchResult, VectorSearchParams, IDE } from '../types/database'
 
+const requireSupabaseAdmin = () => {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not initialized')
+  }
+  return supabaseAdmin
+}
+
 export interface RAGRetrieverOptions {
   embeddingService?: EmbeddingService
   defaultTopK?: number
@@ -87,7 +94,8 @@ export class RAGRetriever {
     // Get IDE information
     let ide: IDE | undefined
     if (chunks.length > 0) {
-      const { data: ideData } = await supabaseAdmin
+      const admin = requireSupabaseAdmin()
+      const { data: ideData } = await admin
         .from('ides')
         .select('*')
         .eq('id', ideId)
@@ -122,7 +130,7 @@ export class RAGRetriever {
     const { query_embedding, ide_id, limit = 10, threshold = 0.7 } = params
 
     try {
-      const { data, error } = await supabaseAdmin.rpc('vector_search', {
+      const { data, error } = await requireSupabaseAdmin().rpc('vector_search', {
         query_embedding,
         match_threshold: threshold,
         match_count: limit,
@@ -183,7 +191,7 @@ export class RAGRetriever {
       : [query_embedding, threshold, limit]
 
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await requireSupabaseAdmin()
         .rpc('execute_raw_sql', { query: query.replace(/\$\d+/g, '?'), params: queryParams })
 
       if (error) {
@@ -219,7 +227,7 @@ export class RAGRetriever {
     const { ide_id, limit = 10 } = params
 
     // Fallback to text search
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await requireSupabaseAdmin()
       .from('doc_chunks')
       .select(`
         *,
