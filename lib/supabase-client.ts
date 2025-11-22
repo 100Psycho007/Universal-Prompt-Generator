@@ -1,34 +1,47 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Client for browser/client-side usage
-export const supabase: SupabaseClient = createClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
-)
+// Create clients only if environment variables are available
+let supabase: SupabaseClient | null = null
+let supabaseAdmin: SupabaseClient | null = null
 
-// Client for server-side usage (admin operations)
-export const supabaseAdmin: SupabaseClient = createClient(
-  supabaseUrl,
-  supabaseServiceKey,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
+if (supabaseUrl && supabaseAnonKey) {
+  // Client for browser/client-side usage
+  supabase = createClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     }
-  }
-)
+  )
+} else {
+  console.warn('Supabase environment variables not configured')
+}
+
+if (supabaseUrl && supabaseServiceKey) {
+  // Client for server-side usage (admin operations)
+  supabaseAdmin = createClient(
+    supabaseUrl,
+    supabaseServiceKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    }
+  )
+}
+
+// Export with null checks
+export { supabase, supabaseAdmin }
 
 // Helper functions for common operations
 

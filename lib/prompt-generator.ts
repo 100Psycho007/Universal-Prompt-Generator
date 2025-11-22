@@ -1,4 +1,11 @@
 import { supabaseAdmin } from '@/lib/supabase-client'
+
+const requireSupabaseAdmin = () => {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client is not initialized')
+  }
+  return supabaseAdmin
+}
 import type { PromptFormat } from './format-detector'
 import type { IDEManifest } from './manifest-builder'
 import { TemplateRenderer, type TemplateFileInput, type TemplateRenderPayload } from './template-renderer'
@@ -138,7 +145,8 @@ export class PromptGenerator {
   }
 
   private async loadIdeManifest(ideId: string): Promise<IDERecord> {
-    const { data, error } = await supabaseAdmin
+    const admin = requireSupabaseAdmin()
+    const { data, error } = await admin
       .from('ides')
       .select('id, name, manifest')
       .eq('id', ideId)

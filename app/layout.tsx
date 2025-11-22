@@ -1,20 +1,23 @@
 import type { Metadata } from 'next'
+import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Universal IDE Database - Prompt Generator',
-  description: 'Generate customized prompts for 20+ IDEs',
+  title: 'Universal IDE Database',
+  description: 'Database of IDE documentation and features'
 }
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode
 }) {
   return (
     <html lang="en">
       <body>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

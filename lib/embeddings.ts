@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto'
+import { Logger } from './logger'
+import { RetryUtil } from './retry-utils'
 
 export interface EmbeddableChunk {
   id: string
@@ -12,6 +14,7 @@ export interface EmbeddingServiceOptions {
   openRouterModel?: string
   openAIModel?: string
   fetchImpl?: typeof fetch
+  userId?: string
 }
 
 export interface EmbeddingResult {
@@ -44,6 +47,7 @@ export class EmbeddingService {
   private readonly openRouterAppUrl?: string
   private readonly openRouterAppName?: string
   private readonly openAIApiKey?: string
+  private readonly userId?: string
 
   constructor(options?: EmbeddingServiceOptions) {
     this.batchSize = options?.batchSize ?? DEFAULT_BATCH_SIZE
@@ -52,6 +56,7 @@ export class EmbeddingService {
     this.openRouterModel = options?.openRouterModel ?? DEFAULT_OPENROUTER_MODEL
     this.openAIModel = options?.openAIModel ?? DEFAULT_OPENAI_MODEL
     this.fetchImpl = options?.fetchImpl ?? fetch
+    this.userId = options?.userId
 
     this.openRouterApiKey = process.env.OPENROUTER_API_KEY
     this.openRouterAppUrl = process.env.OPENROUTER_APP_URL
@@ -60,46 +65,72 @@ export class EmbeddingService {
   }
 
   public async generateEmbeddings(chunks: EmbeddableChunk[]): Promise<EmbeddingResult[]> {
-    if (!Array.isArray(chunks) || chunks.length === 0) {
-      return []
-    }
+    const startTime = Date.now()
 
-    const orderedResults = new Map<string, number[]>()
-    const pending: Array<{ id: string; text: string; cacheKey: string }> = []
-
-    for (const chunk of chunks) {
-      const trimmedText = chunk.text.trim()
-      if (!trimmedText) {
-        continue
+    try {
+      if (!Array.isArray(chunks) || chunks.length === 0) {
+        return []
       }
 
-      const cacheKey = hashText(normalizeText(trimmedText))
-      const cached = embeddingCache.get(cacheKey)
-      if (cached) {
-        orderedResults.set(chunk.id, cached)
-        continue
+      const orderedResults = new Map<string, number[]>()
+      const pending: Array<{ id: string; text: string; cacheKey: string }> = []
+
+      for (const chunk of chunks) {
+        const trimmedText = chunk.text.trim()
+        if (!trimmedText) {
+          continue
+        }
+
+        const cacheKey = hashText(normalizeText(trimmedText))
+        const cached = embeddingCache.get(cacheKey)
+        if (cached) {
+          orderedResults.set(chunk.id, cached)
+          continue
+        }
+
+        pending.push({ id: chunk.id, text: trimmedText, cacheKey })
       }
 
-      pending.push({ id: chunk.id, text: trimmedText, cacheKey })
-    }
+      for (let i = 0; i < pending.length; i += this.batchSize) {
+        const batch = pending.slice(i, i + this.batchSize)
+        const embeddings = await this.embedBatch(batch.map((item) => item.text))
 
-    for (let i = 0; i < pending.length; i += this.batchSize) {
-      const batch = pending.slice(i, i + this.batchSize)
-      const embeddings = await this.embedBatch(batch.map((item) => item.text))
+        embeddings.forEach((embedding, index) => {
+          const item = batch[index]
+          embeddingCache.set(item.cacheKey, embedding)
+          orderedResults.set(item.id, embedding)
+        })
+      }
 
-      embeddings.forEach((embedding, index) => {
-        const item = batch[index]
-        embeddingCache.set(item.cacheKey, embedding)
-        orderedResults.set(item.id, embedding)
+      const results = chunks
+        .filter((chunk) => orderedResults.has(chunk.id))
+        .map((chunk) => ({
+          id: chunk.id,
+          embedding: orderedResults.get(chunk.id) ?? []
+        }))
+
+      const duration = Date.now() - startTime
+      Logger.logEmbeddingCall({
+        userId: this.userId,
+        chunkCount: chunks.length,
+        duration,
+        provider: this.openRouterApiKey ? 'openrouter' : 'openai',
+        success: true
       })
-    }
 
-    return chunks
-      .filter((chunk) => orderedResults.has(chunk.id))
-      .map((chunk) => ({
-        id: chunk.id,
-        embedding: orderedResults.get(chunk.id) ?? []
-      }))
+      return results
+    } catch (error) {
+      const duration = Date.now() - startTime
+      Logger.logEmbeddingCall({
+        userId: this.userId,
+        chunkCount: chunks.length,
+        duration,
+        provider: this.openRouterApiKey ? 'openrouter' : 'openai',
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      })
+      throw error
+    }
   }
 
   private async embedBatch(texts: string[]): Promise<number[][]> {
@@ -111,18 +142,31 @@ export class EmbeddingService {
 
     if (this.openRouterApiKey) {
       try {
-        return await this.withRetry(() => this.callOpenRouter(texts))
+        return await RetryUtil.withExponentialBackoff(() => this.callOpenRouter(texts), this.maxRetries, this.initialRetryDelay)
       } catch (error) {
         providerErrors.push(error instanceof Error ? error : new Error(String(error)))
-        console.warn('EmbeddingService: OpenRouter embedding failed, falling back to OpenAI:', error)
+        Logger.warn({
+          action: 'EMBEDDING_PROVIDER_FAILED',
+          errorMessage: error instanceof Error ? error.message : String(error),
+          metadata: {
+            provider: 'openrouter'
+          }
+        })
       }
     }
 
     if (this.openAIApiKey) {
       try {
-        return await this.withRetry(() => this.callOpenAI(texts))
+        return await RetryUtil.withExponentialBackoff(() => this.callOpenAI(texts), this.maxRetries, this.initialRetryDelay)
       } catch (error) {
         providerErrors.push(error instanceof Error ? error : new Error(String(error)))
+        Logger.warn({
+          action: 'EMBEDDING_PROVIDER_FAILED',
+          errorMessage: error instanceof Error ? error.message : String(error),
+          metadata: {
+            provider: 'openai'
+          }
+        })
       }
     }
 
