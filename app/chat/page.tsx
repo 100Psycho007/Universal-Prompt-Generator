@@ -358,18 +358,17 @@ Welcome, {userProfile?.fullName || userProfile?.email}!
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-white mb-2">
-                {
-selectedIDE ? Chat about ${selectedIDE.name} : 'Select an IDE to start chatting'}
-</h2>
-<p className="text-gray-400 mb-4">
-Ask questions about documentation, features, and best practices.
-</p>
-<p className="text-gray-500 text-sm">
-Use Cmd+Enter or Ctrl+Enter to send messages quickly
-</p>
-</div>
-</div>
-)}
+                {selectedIDE ? `Chat about ${selectedIDE.name}` : 'Select an IDE to start chatting'}
+              </h2>
+              <p className="text-gray-400 mb-4">
+                Ask questions about documentation, features, and best practices.
+              </p>
+              <p className="text-gray-500 text-sm">
+                Use Cmd+Enter or Ctrl+Enter to send messages quickly
+              </p>
+            </div>
+          </div>
+        )}
 
         {messages.map((message, index) => (
           <ChatMessage
