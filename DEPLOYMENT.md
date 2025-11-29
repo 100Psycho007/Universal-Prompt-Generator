@@ -334,7 +334,7 @@ Set up redirects in `vercel.json`:
 
 ### Vercel Cron Configuration
 
-Cron jobs are configured in `vercel.json`:
+Cron jobs are configured in `vercel.json`. Due to Vercel Hobby plan limits (max 2 cron jobs), only the 2 most critical jobs are automatically scheduled:
 
 ```json
 {
@@ -346,18 +346,12 @@ Cron jobs are configured in `vercel.json`:
     {
       "path": "/api/cron/cleanup-vectors",
       "schedule": "0 3 * * 0"
-    },
-    {
-      "path": "/api/cron/archive-logs",
-      "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/validate-manifests",
-      "schedule": "0 4 1 * *"
     }
   ]
 }
 ```
+
+**Note:** The `archive-logs` and `validate-manifests` cron routes still exist but must be triggered manually. See [Manual Cron Triggers](#manual-cron-triggers) below.
 
 ### Cron Setup Steps
 
@@ -386,12 +380,27 @@ LIMIT 10;
 
 ### Manual Cron Triggers
 
-Test cron jobs manually:
+The following jobs are available but not automatically scheduled on Vercel Hobby plan:
 
 ```bash
+# Test automated jobs
 curl -X POST https://your-domain.com/api/cron/weekly-recrawl \
   -H "Authorization: Bearer YOUR_CRON_SECRET"
+
+curl -X POST https://your-domain.com/api/cron/cleanup-vectors \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+
+# Trigger non-scheduled jobs (run these manually as needed)
+curl -X POST https://your-domain.com/api/cron/archive-logs \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+
+curl -X POST https://your-domain.com/api/cron/validate-manifests \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
 ```
+
+**Recommended manual trigger schedule:**
+- **archive-logs**: Monthly or when admin_logs table exceeds 10,000 rows
+- **validate-manifests**: After bulk IDE additions or quarterly
 
 ### Cron Monitoring
 

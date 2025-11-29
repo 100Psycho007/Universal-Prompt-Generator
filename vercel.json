@@ -8,14 +8,6 @@
   {
     "path": "/api/cron/cleanup-vectors",
     "schedule": "0 3 * * 0"
-  },
-  {
-    "path": "/api/cron/archive-logs",
-    "schedule": "0 1 * * *"
-  },
-  {
-    "path": "/api/cron/validate-manifests",
-    "schedule": "0 4 1 * *"
   }
 ],
 "functions": {
