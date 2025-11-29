@@ -47,10 +47,10 @@ The Universal IDE Platform is a production-ready Next.js application that provid
 
 ### ⚙️ Automation & Maintenance
 
-- ✅ Weekly documentation re-crawl
-- ✅ Vector database cleanup
-- ✅ Log archival
-- ✅ Manifest validation
+- ✅ Weekly documentation re-crawl (automated)
+- ✅ Vector database cleanup (automated)
+- ✅ Log archival (manual trigger)
+- ✅ Manifest validation (manual trigger)
 - ✅ Automated backups
 
 ### 🧪 Testing & Quality

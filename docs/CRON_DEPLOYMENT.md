@@ -114,11 +114,10 @@ After deployment, verify cron jobs are registered:
 1. **In Vercel Dashboard:**
    - Go to your project
    - Navigate to "Settings" → "Cron Jobs"
-   - You should see 4 jobs listed:
+   - You should see 2 jobs listed (Vercel Hobby plan limit):
      - `/api/cron/weekly-recrawl` - `0 2 * * 1`
      - `/api/cron/cleanup-vectors` - `0 3 * * 0`
-     - `/api/cron/archive-logs` - `0 1 * * *`
-     - `/api/cron/validate-manifests` - `0 4 1 * *`
+   - **Note:** The other 2 jobs (`archive-logs` and `validate-manifests`) are available in the codebase but must be triggered manually
 
 2. **Check deployment logs:**
    - Look for any errors during build/deployment
@@ -133,26 +132,26 @@ Before waiting for scheduled execution, test each job manually:
 DEPLOY_URL="https://your-app.vercel.app"
 CRON_SECRET="your-cron-secret"
 
-# Test weekly re-crawl
+# Test automated jobs
 curl -X POST "$DEPLOY_URL/api/cron/weekly-recrawl" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -H "Content-Type: application/json"
 
-# Test vector cleanup
 curl -X POST "$DEPLOY_URL/api/cron/cleanup-vectors" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -H "Content-Type: application/json"
 
-# Test log archival
+# Test manual-only jobs (not automatically scheduled)
 curl -X POST "$DEPLOY_URL/api/cron/archive-logs" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -H "Content-Type: application/json"
 
-# Test manifest validation
 curl -X POST "$DEPLOY_URL/api/cron/validate-manifests" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -H "Content-Type: application/json"
 ```
+
+**Note:** Since `archive-logs` and `validate-manifests` are not automatically scheduled, you'll need to trigger them manually when needed (recommended: monthly for archive-logs, after IDE additions for validate-manifests).
 
 Expected response format:
 ```json
@@ -364,13 +363,13 @@ vercel --prod --force
 
 After successful deployment:
 
-- [ ] All 4 cron jobs visible in Vercel dashboard
-- [ ] Manual test of each job successful
+- [ ] 2 automated cron jobs visible in Vercel dashboard (weekly-recrawl, cleanup-vectors)
+- [ ] Manual test of all 4 jobs successful (including non-scheduled jobs)
 - [ ] Database tables created correctly
 - [ ] Environment variables set properly
 - [ ] Monitoring/alerting configured
 - [ ] Documentation updated
-- [ ] Team notified of new cron jobs
+- [ ] Team notified of new cron jobs and manual trigger requirements
 - [ ] First scheduled execution confirmed successful
 
 ## Example: Complete Deployment

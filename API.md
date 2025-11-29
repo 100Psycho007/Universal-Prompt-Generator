@@ -307,9 +307,11 @@ Redirect URI: https://your-domain.com/api/auth/callback
 
 All cron endpoints require Bearer token authentication with `CRON_SECRET`.
 
+**Note:** Due to Vercel Hobby plan limits (max 2 cron jobs), only `weekly-recrawl` and `cleanup-vectors` are automatically scheduled. The other jobs (`archive-logs`, `validate-manifests`) must be triggered manually.
+
 #### `POST /api/cron/weekly-recrawl`
 
-Re-crawl all active IDE documentation.
+Re-crawl all active IDE documentation. **[AUTOMATED - Monday 2 AM UTC]**
 
 **Authentication**: Bearer token (CRON_SECRET)
 
@@ -349,7 +351,7 @@ curl -X POST https://your-domain.com/api/cron/weekly-recrawl \
 
 #### `POST /api/cron/cleanup-vectors`
 
-Clean up duplicate and orphaned vectors.
+Clean up duplicate and orphaned vectors. **[AUTOMATED - Sunday 3 AM UTC]**
 
 **Authentication**: Bearer token (CRON_SECRET)
 
@@ -376,7 +378,7 @@ Clean up duplicate and orphaned vectors.
 
 #### `POST /api/cron/archive-logs`
 
-Archive admin logs older than 30 days.
+Archive admin logs older than 30 days. **[MANUAL TRIGGER ONLY]**
 
 **Authentication**: Bearer token (CRON_SECRET)
 
@@ -402,7 +404,7 @@ Archive admin logs older than 30 days.
 
 #### `POST /api/cron/validate-manifests`
 
-Validate and regenerate IDE manifests if needed.
+Validate and regenerate IDE manifests if needed. **[MANUAL TRIGGER ONLY]**
 
 **Authentication**: Bearer token (CRON_SECRET)
 

@@ -4,21 +4,23 @@ This document describes the automated maintenance tasks configured for the Unive
 
 ## Overview
 
-The application uses Vercel Cron Jobs to run scheduled maintenance tasks:
+The application uses Vercel Cron Jobs to run scheduled maintenance tasks. Due to Vercel Hobby plan limitations (max 2 cron jobs), only the 2 most critical jobs are automatically scheduled:
 
-1. **Weekly Documentation Re-Crawl** - Updates IDE documentation
-2. **Weekly Vector Database Cleanup** - Removes duplicates and orphans
-3. **Daily Log Archival** - Archives old admin logs
-4. **Monthly Manifest Validation** - Validates and regenerates IDE manifests
+1. **Weekly Documentation Re-Crawl** - Updates IDE documentation (AUTOMATED)
+2. **Weekly Vector Database Cleanup** - Removes duplicates and orphans (AUTOMATED)
+3. **Daily Log Archival** - Archives old admin logs (MANUAL TRIGGER ONLY)
+4. **Monthly Manifest Validation** - Validates and regenerates IDE manifests (MANUAL TRIGGER ONLY)
 
 ## Schedule
 
-| Job | Schedule | Cron Expression | Description |
-|-----|----------|----------------|-------------|
-| Weekly Re-Crawl | Monday 2 AM UTC | `0 2 * * 1` | Re-crawls all active IDEs |
-| Vector Cleanup | Sunday 3 AM UTC | `0 3 * * 0` | Cleans duplicate/orphaned chunks |
-| Log Archival | Daily 1 AM UTC | `0 1 * * *` | Archives logs older than 30 days |
-| Manifest Validation | 1st of month, 4 AM UTC | `0 4 1 * *` | Validates all IDE manifests |
+| Job | Schedule | Cron Expression | Trigger Type | Description |
+|-----|----------|----------------|--------------|-------------|
+| Weekly Re-Crawl | Monday 2 AM UTC | `0 2 * * 1` | Automated | Re-crawls all active IDEs |
+| Vector Cleanup | Sunday 3 AM UTC | `0 3 * * 0` | Automated | Cleans duplicate/orphaned chunks |
+| Log Archival | ~~Daily 1 AM UTC~~ | ~~`0 1 * * *`~~ | Manual Only | Archives logs older than 30 days |
+| Manifest Validation | ~~1st of month, 4 AM UTC~~ | ~~`0 4 1 * *`~~ | Manual Only | Validates all IDE manifests |
+
+**Note:** The last 2 jobs must be triggered manually via HTTP POST. See the [Manual Trigger](#manual-triggers) section below.
 
 ## Setup
 
@@ -62,7 +64,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ### 3. Vercel Configuration
 
-The cron jobs are configured in `vercel.json`:
+The cron jobs are configured in `vercel.json`. Only 2 jobs are scheduled automatically (Vercel Hobby plan limit):
 
 ```json
 {
@@ -74,18 +76,12 @@ The cron jobs are configured in `vercel.json`:
     {
       "path": "/api/cron/cleanup-vectors",
       "schedule": "0 3 * * 0"
-    },
-    {
-      "path": "/api/cron/archive-logs",
-      "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/validate-manifests",
-      "schedule": "0 4 1 * *"
     }
   ]
 }
 ```
+
+**Note:** The `archive-logs` and `validate-manifests` cron routes still exist in `/app/api/cron/` but are not automatically scheduled. They can be triggered manually via HTTP POST when needed.
 
 ### 4. Deployment
 
@@ -99,7 +95,7 @@ After deployment, verify cron jobs are registered:
 1. Go to your Vercel Dashboard
 2. Select your project
 3. Navigate to "Settings" → "Cron Jobs"
-4. Verify all 4 jobs are listed
+4. Verify the 2 automated jobs are listed (weekly-recrawl and cleanup-vectors)
 
 ## Job Details
 
@@ -174,7 +170,7 @@ curl -X POST https://your-domain.com/api/cron/cleanup-vectors \
 ### 3. Daily Log Archival
 
 **Endpoint:** `/api/cron/archive-logs`  
-**Schedule:** Daily 1 AM UTC  
+**Schedule:** ~~Daily 1 AM UTC~~ **MANUAL TRIGGER ONLY**  
 
 **What it does:**
 - Moves logs older than 30 days to `archived_admin_logs`
@@ -206,7 +202,7 @@ curl -X POST https://your-domain.com/api/cron/archive-logs \
 ### 4. Monthly Manifest Validation
 
 **Endpoint:** `/api/cron/validate-manifests`  
-**Schedule:** 1st of month, 4 AM UTC  
+**Schedule:** ~~1st of month, 4 AM UTC~~ **MANUAL TRIGGER ONLY**  
 
 **What it does:**
 - Validates structure of all IDE manifests
@@ -368,6 +364,36 @@ If jobs fail with database errors:
    - Service role should bypass RLS
    - Verify policies don't block operations
 
+## Manual Triggers
+
+Since only 2 cron jobs are automatically scheduled (Vercel Hobby plan limit), the other jobs can be triggered manually when needed:
+
+### Production Manual Triggers
+
+Trigger non-scheduled jobs in production:
+
+```bash
+# Archive logs (recommended: run monthly or when admin_logs table grows large)
+curl -X POST https://your-domain.com/api/cron/archive-logs \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+
+# Validate manifests (recommended: run after adding new IDEs or when docs change)
+curl -X POST https://your-domain.com/api/cron/validate-manifests \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+### Recommended Manual Trigger Schedule
+
+Since these jobs are not automated:
+
+- **archive-logs**: Run monthly or when `admin_logs` table exceeds 10,000 rows
+- **validate-manifests**: Run after bulk IDE additions or quarterly
+
+You can automate these using:
+- GitHub Actions with scheduled workflows
+- Local cron on a server
+- Vercel Pro plan (4+ cron jobs)
+
 ## Testing Locally
 
 To test cron jobs locally:
@@ -388,19 +414,19 @@ npm run dev
 ### 3. Trigger Jobs Manually
 
 ```bash
-# Weekly re-crawl
+# Weekly re-crawl (automated in production)
 curl -X POST http://localhost:3000/api/cron/weekly-recrawl \
   -H "Authorization: Bearer local-test-secret"
 
-# Vector cleanup
+# Vector cleanup (automated in production)
 curl -X POST http://localhost:3000/api/cron/cleanup-vectors \
   -H "Authorization: Bearer local-test-secret"
 
-# Log archival
+# Log archival (manual trigger only)
 curl -X POST http://localhost:3000/api/cron/archive-logs \
   -H "Authorization: Bearer local-test-secret"
 
-# Manifest validation
+# Manifest validation (manual trigger only)
 curl -X POST http://localhost:3000/api/cron/validate-manifests \
   -H "Authorization: Bearer local-test-secret"
 ```
