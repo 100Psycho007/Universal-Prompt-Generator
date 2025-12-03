@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { encoding_for_model, get_encoding, Tiktoken } from 'tiktoken'
-import type { DocChunkInsert } from '@/types/database'
+import type { DocChunkInsert } from '../types/database'
 
 export interface ChunkerOptions {
   minTokens?: number
