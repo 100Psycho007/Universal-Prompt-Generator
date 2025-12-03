@@ -21,13 +21,14 @@ The Universal IDE Platform is a production-ready Next.js application that provid
 
 ### 🚀 Core Features
 
-- ✅ **20+ IDEs Pre-Configured**: VSCode, Cursor, JetBrains, Neovim, Emacs, and more
+- ✅ **15 AI Agents Pre-Configured**: Cursor, Claude, Gemini, GitHub Copilot, Coder, Bolt.new, Lovable, Tabnine, CodeWhisperer, JetBrains AI, IntelliCode, Ghostwriter, Kiro, cto.new, Qoder
 - ✅ **Smart Documentation Crawler**: Respects robots.txt, rate limits, and handles multiple formats
 - ✅ **Vector Semantic Search**: pgvector + OpenAI embeddings for accurate retrieval
 - ✅ **RAG Chat**: Multi-turn conversations with source citations
-- ✅ **Prompt Templates**: Customizable templates per IDE
+- ✅ **Prompt Templates**: Customizable templates per IDE/agent
 - ✅ **Format Detection**: Auto-detects JSON, Markdown, YAML, TOML, XML, and more
 - ✅ **Manifest System**: Structured metadata with validation
+- ✅ **Auto-Seeding**: One-command ingestion of all AI agent documentation
 
 ### 🔐 Authentication & Authorization
 
@@ -181,12 +182,23 @@ export DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5
 psql $DATABASE_URL -f migrations/001_initial_schema.sql
 psql $DATABASE_URL -f migrations/002_rls_policies.sql
 psql $DATABASE_URL -f migrations/003_seed_data.sql
-psql $DATABASE_URL -f migrations/004_chat_system.sql
-psql $DATABASE_URL -f migrations/005_auth_system.sql
+psql $DATABASE_URL -f migrations/004_vector_search_functions.sql
+psql $DATABASE_URL -f migrations/005_auth_enhancements.sql
 psql $DATABASE_URL -f migrations/006_cron_jobs_support.sql
 ```
 
-5. **Run development server**:
+5. **Seed AI agent documentation** (Optional but recommended):
+```bash
+# This will ingest documentation for 15 AI coding agents
+# Takes 30-60 minutes depending on network speed
+npm run seed:ai-agents
+
+# Or seed via API after server is running
+curl -X POST http://localhost:3000/api/admin/seed-agents \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+```
+
+6. **Run development server**:
 ```bash
 npm run dev
 ```
@@ -213,10 +225,11 @@ npm start                # Start production server
 
 ## Documentation
 
-- **[API Documentation](./API.md)** - Complete API reference with examples
-- **[User Guide](./USER_GUIDE.md)** - End-user features and workflows
-- **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment instructions
-- **[Contributing Guide](./CONTRIBUTING.md)** - Development setup and standards
+- **[API Documentation](./docs/API.md)** - Complete API reference with examples
+- **[User Guide](./docs/USER_GUIDE.md)** - End-user features and workflows
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Production deployment instructions
+- **[Contributing Guide](./docs/CONTRIBUTING.md)** - Development setup and standards
+- **[Seeding Guide](./docs/SEEDING_GUIDE.md)** - AI agent documentation ingestion
 - **[Cron Jobs](./docs/CRON_JOBS.md)** - Automated maintenance tasks
 - **[Error Handling](./docs/ERROR_HANDLING_GUIDE.md)** - Logging and error patterns
 

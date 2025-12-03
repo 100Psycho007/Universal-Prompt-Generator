@@ -165,6 +165,8 @@ export interface IDEUpdate {
   manifest?: Json | null
   created_by?: string | null
   updated_by?: string | null
+  doc_count?: number
+  last_ingested_at?: string | null
 }
 
 export interface DocChunkUpdate {
