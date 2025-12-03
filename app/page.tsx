@@ -20,11 +20,16 @@ export default function Home() {
   }, [])
 
   const fetchIDEs = async () => {
-    const { data, error } = await getIDEs()
-    if (!error && data) {
-      setIDEs(data)
+    try {
+      const { data, error } = await getIDEs()
+      if (!error && data) {
+        setIDEs(data)
+      }
+    } catch (error) {
+      console.error('Failed to load IDEs:', error)
+    } finally {
+      setIDEsLoading(false)
     }
-    setIDEsLoading(false)
   }
 
   const handleLogout = async () => {
@@ -68,7 +73,7 @@ export default function Home() {
                     Chat
                   </Link>
                   <div className="text-gray-300">
-                    Welcome, {userProfile?.fullName || userProfile?.email}!
+                    Welcome, {userProfile?.fullName || userProfile?.email || 'User'}!
                   </div>
                 </>
               )}
