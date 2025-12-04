@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
 
-const getOpenAI = () => {
-  if (!process.env.OPENAI_API_KEY) {
-    return null
-  }
-  return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-}
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const DEFAULT_MODEL = 'meta-llama/llama-3.1-8b-instruct:free'
 
 interface PRDSection {
   title: string
@@ -17,11 +10,11 @@ interface PRDSection {
 
 export async function POST(request: NextRequest) {
   try {
-    const openai = getOpenAI()
+    const apiKey = process.env.OPENROUTER_API_KEY
     
-    if (!openai) {
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'OpenAI API key not configured' },
+        { error: 'OpenRouter API key not configured' },
         { status: 503 }
       )
     }
@@ -61,27 +54,42 @@ Generate a detailed PRD with the following sections:
 
 For each section, provide detailed, actionable content. Be specific and practical.
 
-Format your response as a JSON array of objects with "title" and "content" fields.`
+Format your response as a JSON object with a "sections" array containing objects with "title" and "content" fields.`
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert product manager who creates comprehensive, actionable PRDs. Always respond with valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' }
+    const response = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.OPENROUTER_APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000',
+        'X-Title': process.env.OPENROUTER_APP_NAME || 'Universal IDE Database'
+      },
+      body: JSON.stringify({
+        model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert product manager who creates comprehensive, actionable PRDs. Always respond with valid JSON.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7
+      })
     })
 
-    const responseText = completion.choices[0].message.content
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`OpenRouter API failed: ${response.status} ${errorText}`)
+    }
+
+    const completion = await response.json()
+    const responseText = completion.choices?.[0]?.message?.content
+    
     if (!responseText) {
-      throw new Error('No response from OpenAI')
+      throw new Error('No response from OpenRouter')
     }
 
     // Parse the response
