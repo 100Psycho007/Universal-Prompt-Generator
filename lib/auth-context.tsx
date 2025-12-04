@@ -27,43 +27,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       if (!supabase) {
         setIsLoading(false)
+        setIsGuest(true)
         return
       }
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      // Use getSession instead of getUser for faster initial load
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-      if (authError || !user) {
+      if (sessionError || !session?.user) {
         setUser(null)
         setUserProfile(null)
         setIsGuest(true)
         setIsAdmin(false)
+        setIsLoading(false)
         return
       }
 
-      setUser(user)
+      setUser(session.user)
       setIsGuest(false)
+      setIsLoading(false)
 
-      const { data: profile, error: profileError } = await supabase
+      // Fetch profile in background (non-blocking)
+      supabase
         .from('users')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single()
-
-      if (!profileError && profile) {
-        setUserProfile({
-          id: profile.id,
-          email: profile.email || user.email || '',
-          fullName: profile.profile?.fullName || '',
-          role: profile.role,
-          isGuest: profile.is_guest,
-          preferences: profile.preferences
+        .then(({ data: profile, error: profileError }) => {
+          if (!profileError && profile) {
+            setUserProfile({
+              id: profile.id,
+              email: profile.email || session.user.email || '',
+              fullName: profile.profile?.fullName || '',
+              role: profile.role,
+              isGuest: profile.is_guest,
+              preferences: profile.preferences
+            })
+            setIsAdmin(profile.role === 'admin')
+          }
         })
-        setIsAdmin(profile.role === 'admin')
-      }
+        .catch(error => {
+          console.error('Error fetching user profile:', error)
+        })
     } catch (error) {
       console.error('Error refreshing user:', error)
-    } finally {
       setIsLoading(false)
+      setIsGuest(true)
     }
   }
 

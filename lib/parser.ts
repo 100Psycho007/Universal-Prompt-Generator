@@ -244,3 +244,51 @@ export const parseText = (text: string, url?: string, options?: ParserOptions): 
   const parser = new DocumentParser(options)
   return parser.parseText(text, url)
 }
+
+/**
+ * Parse a document buffer based on file extension
+ */
+export async function parseDocument(buffer: Buffer, filename: string): Promise<string> {
+  const ext = filename.toLowerCase().split('.').pop()
+
+  try {
+    switch (ext) {
+      case 'md':
+      case 'markdown':
+        const mdContent = buffer.toString('utf-8')
+        const mdParsed = parseMarkdown(mdContent)
+        return mdParsed.text
+
+      case 'txt':
+        const txtContent = buffer.toString('utf-8')
+        const txtParsed = parseText(txtContent)
+        return txtParsed.text
+
+      case 'html':
+      case 'htm':
+        const htmlContent = buffer.toString('utf-8')
+        const htmlParsed = parseHtml(htmlContent)
+        return htmlParsed.text
+
+      case 'pdf':
+        // For PDF, we'd need a library like pdf-parse
+        // For now, return a placeholder
+        return `[PDF content from ${filename} - PDF parsing not yet implemented]`
+
+      case 'docx':
+        // For DOCX, we'd need a library like mammoth
+        return `[DOCX content from ${filename} - DOCX parsing not yet implemented]`
+
+      case 'epub':
+        return `[EPUB content from ${filename} - EPUB parsing not yet implemented]`
+
+      default:
+        // Try to parse as text
+        const defaultContent = buffer.toString('utf-8')
+        return defaultContent
+    }
+  } catch (error) {
+    console.error(`Error parsing ${filename}:`, error)
+    throw new Error(`Failed to parse ${filename}`)
+  }
+}

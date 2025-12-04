@@ -3,8 +3,15 @@ import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Universal IDE Database',
-  description: 'Database of IDE documentation and features'
+  title: 'Universal IDE Platform',
+  description: 'AI-powered documentation platform with RAG chat, custom doc uploads, and PRD generation',
+  keywords: ['IDE', 'documentation', 'AI', 'RAG', 'chat', 'PRD', 'product requirements'],
+  authors: [{ name: 'Universal IDE Platform' }],
+  openGraph: {
+    title: 'Universal IDE Platform',
+    description: 'AI-powered documentation platform with RAG chat, custom doc uploads, and PRD generation',
+    type: 'website',
+  }
 }
 
 export default function RootLayout({

@@ -53,8 +53,8 @@ export class EmbeddingService {
     this.batchSize = options?.batchSize ?? DEFAULT_BATCH_SIZE
     this.maxRetries = options?.maxRetries ?? DEFAULT_MAX_RETRIES
     this.initialRetryDelay = options?.initialRetryDelayMs ?? DEFAULT_INITIAL_DELAY
-    this.openRouterModel = options?.openRouterModel ?? DEFAULT_OPENROUTER_MODEL
-    this.openAIModel = options?.openAIModel ?? DEFAULT_OPENAI_MODEL
+    this.openRouterModel = options?.openRouterModel ?? process.env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL
+    this.openAIModel = options?.openAIModel ?? process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL
     this.fetchImpl = options?.fetchImpl ?? fetch
     this.userId = options?.userId
 

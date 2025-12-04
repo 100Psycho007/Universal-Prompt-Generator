@@ -21,9 +21,17 @@ const getSupabaseAdmin = () => {
 export class IDEManager {
   static async createIDE(ideData: DatabaseInsert['ides']) {
     const admin = getSupabaseAdmin()
+    
+    // Generate UUID manually if not provided (workaround for missing uuid-ossp extension)
+    const crypto = require('crypto')
+    const ideDataWithId = {
+      ...ideData,
+      id: crypto.randomUUID() // Generate UUID in Node.js instead of database
+    }
+    
     const { data, error } = await admin
       .from('ides')
-      .insert(ideData)
+      .insert(ideDataWithId)
       .select()
       .single()
     

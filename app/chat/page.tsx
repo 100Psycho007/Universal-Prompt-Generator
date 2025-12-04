@@ -45,7 +45,23 @@ export default function ChatPage() {
         if (!error && data) {
           setIDEs(data)
 
-          // Select first IDE by default
+          // Check URL for ideId parameter
+          const urlParams = new URLSearchParams(window.location.search)
+          const ideIdFromUrl = urlParams.get('ideId')
+          
+          if (ideIdFromUrl) {
+            // Find IDE by ID from URL
+            const ideFromUrl = data.find(ide => ide.id === ideIdFromUrl)
+            if (ideFromUrl) {
+              setSelectedIDE(ideFromUrl)
+              if (ideFromUrl.manifest && typeof ideFromUrl.manifest === 'object' && !Array.isArray(ideFromUrl.manifest)) {
+                setManifest(ideFromUrl.manifest as unknown as IDEManifest)
+              }
+              return
+            }
+          }
+
+          // Select first IDE by default if no URL param
           if (data.length > 0) {
             setSelectedIDE(data[0])
             if (data[0].manifest && typeof data[0].manifest === 'object' && !Array.isArray(data[0].manifest)) {
@@ -288,8 +304,9 @@ export default function ChatPage() {
       <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="text-xl font-bold text-white">
-              Universal IDE Database
+            <Link href="/" className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="text-2xl">🚀</span>
+              Universal IDE Platform
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm" >

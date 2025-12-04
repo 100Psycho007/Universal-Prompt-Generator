@@ -23,23 +23,28 @@
     "db:reset": "supabase db reset",
     "db:seed": "supabase db seed",
     "db:generate-types": "supabase gen types typescript --local > types/generated.ts",
-    "seed:ai-agents": "tsx scripts/seed-ai-agents.ts"
+    "seed:ai-agents": "tsx scripts/seed-ai-agents.ts",
+    "seed:fix-zero-chunks": "tsx scripts/fix-zero-chunk-agents.ts",
+    "seed:manual": "tsx scripts/manual-seed-agents.ts",
+    "seed:embeddings": "tsx scripts/generate-missing-embeddings.ts",
+    "db:cleanup-duplicates": "tsx scripts/cleanup-duplicates.ts"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.7.0",
     "@supabase/supabase-js": "^2.39.0",
+    "autoprefixer": "^10.4.16",
     "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^17.2.3",
     "next": "^14.0.0",
     "openai": "^4.20.0",
+    "postcss": "^8.4.32",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "robots-parser": "^3.0.1",
+    "tailwindcss": "^3.3.6",
     "tiktoken": "^1.0.22",
     "turndown": "^7.1.2",
-    "typescript": "^5.3.0",
-    "tailwindcss": "^3.3.6",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "typescript": "^5.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
