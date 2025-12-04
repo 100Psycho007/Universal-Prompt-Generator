@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false)
 
       // Fetch profile in background (non-blocking)
-      supabase
+      void supabase
         .from('users')
         .select('*')
         .eq('id', session.user.id)
