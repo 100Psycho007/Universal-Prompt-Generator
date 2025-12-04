@@ -59,10 +59,11 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Crawl the URL
-      const crawlResult = await crawlDocumentation(url, { maxPages: 50 })
-      content = crawlResult.pages.map(p => p.content).join('\n\n')
-      sourceUrl = url
+      // For now, return an error - full crawling will be implemented later
+      return NextResponse.json(
+        { error: 'URL crawling is not yet implemented. Please use file upload or paste content.' },
+        { status: 501 }
+      )
     } else if (method === 'paste') {
       content = formData.get('content') as string
       if (!content) {
