@@ -51,16 +51,6 @@ export default function MonitorPage() {
   const [loading, setLoading] = useState(true)
   const [refreshInterval, setRefreshInterval] = useState(30000) // 30 seconds
 
-  useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      router.push('/')
-    } else if (!isLoading && isAdmin) {
-      fetchMonitoringData()
-      const interval = setInterval(fetchMonitoringData, refreshInterval)
-      return () => clearInterval(interval)
-    }
-  }, [isAdmin, isLoading, router, refreshInterval, fetchMonitoringData])
-
   const fetchMonitoringData = async () => {
     setLoading(true)
     try {
@@ -107,6 +97,16 @@ export default function MonitorPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      router.push('/')
+    } else if (!isLoading && isAdmin) {
+      fetchMonitoringData()
+      const interval = setInterval(fetchMonitoringData, refreshInterval)
+      return () => clearInterval(interval)
+    }
+  }, [isAdmin, isLoading, router, refreshInterval])
 
   const aggregateAPIMetrics = (stats: any[]): APIMetric[] => {
     const grouped = new Map<string, any[]>()
