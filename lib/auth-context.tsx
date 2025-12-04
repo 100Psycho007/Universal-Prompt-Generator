@@ -48,12 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false)
 
       // Fetch profile in background (non-blocking)
-      void supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
-        .then(({ data: profile, error: profileError }) => {
+      ;(async () => {
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
           if (!profileError && profile) {
             setUserProfile({
               id: profile.id,
@@ -65,10 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
             setIsAdmin(profile.role === 'admin')
           }
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Error fetching user profile:', error)
-        })
+        }
+      })()
     } catch (error) {
       console.error('Error refreshing user:', error)
       setIsLoading(false)
