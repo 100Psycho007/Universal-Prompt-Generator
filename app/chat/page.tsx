@@ -299,21 +299,27 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-blue-900/20" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
+      
       {/* Navigation */}
-      <nav className="bg-gray-800 border-b border-gray-700">
+      <nav className="relative z-10 glass-dark border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-2xl">🚀</span>
-              Universal IDE Platform
+            <Link href="/" className="text-xl font-bold text-white flex items-center gap-3 group">
+              <span className="text-2xl group-hover:scale-110 transition-transform">🚀</span>
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Universal IDE Platform
+              </span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm" >
+              <Link href="/" className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/5" >
                 Home
               </Link>
-              <span className="text-gray-400 text-sm">
-                Welcome, {userProfile?.fullName || userProfile?.email || 'User'}!
+              <span className="text-gray-400 text-sm px-3 py-2 glass rounded-lg">
+                {userProfile?.fullName || userProfile?.email || 'User'}
               </span>
             </div>
           </div>
@@ -321,29 +327,36 @@ export default function ChatPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="relative z-10 flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto hidden lg:block">
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-300 uppercase mb-2">Select IDE</h3>
+        <div className="w-72 glass-dark border-r border-white/10 p-6 overflow-y-auto hidden lg:block">
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span className="text-lg">🤖</span>
+              Select AI Agent
+            </h3>
             <div className="space-y-2">
               {idesLoading ? (
-                <p className="text-gray-400 text-sm">Loading IDEs...</p>
+                <div className="space-y-2">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="h-10 glass rounded-lg animate-pulse" />
+                  ))}
+                </div>
               ) : ides.length > 0 ? (
                 ides.map(ide => (
                   <button
                     key={ide.id}
                     onClick={() => handleIDEChange(ide)}
-                    className={`w-full text-left px-3 py-2 rounded text-sm transition ${selectedIDE?.id === ide.id
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-400 hover:bg-gray-700'
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${selectedIDE?.id === ide.id
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                        : 'glass text-gray-300 hover:bg-white/10 border border-white/5 hover:border-white/20'
                       }`}
                   >
                     {ide.name}
                   </button>
                 ))
               ) : (
-                <p className="text-gray-400 text-sm">No IDEs available</p>
+                <p className="text-gray-400 text-sm glass p-4 rounded-lg">No IDEs available</p>
               )}
             </div>
           </div>
@@ -352,16 +365,18 @@ export default function ChatPage() {
             <>
               <button
                 onClick={() => setShowManifest(!showManifest)}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm font-medium mb-4 transition"
+                className="w-full glass hover:bg-white/10 text-white px-4 py-3 rounded-xl text-sm font-medium mb-4 transition-all border border-white/10 hover:border-white/20"
               >
-                {showManifest ? 'Hide' : 'Show'} Manifest
+                {showManifest ? '👁️ Hide' : '📊 Show'} Manifest
               </button>
               {showManifest && manifest && (
-                <ManifestViewer
-                  ide={selectedIDE}
-                  manifest={manifest}
-                  isAdmin={false}
-                />
+                <div className="glass rounded-xl p-4 border border-white/10">
+                  <ManifestViewer
+                    ide={selectedIDE}
+                    manifest={manifest}
+                    isAdmin={false}
+                  />
+                </div>
               )}
             </>
           )}
@@ -370,19 +385,22 @@ export default function ChatPage() {
         {/* Chat Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-2">
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    {selectedIDE ? `Chat about ${selectedIDE.name}` : 'Select an IDE to start chatting'}
+                <div className="text-center max-w-2xl">
+                  <div className="text-7xl mb-6 animate-float">💬</div>
+                  <h2 className="text-4xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {selectedIDE ? `Chat about ${selectedIDE.name}` : 'Select an AI Agent'}
                   </h2>
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-gray-400 mb-6 text-lg">
                     Ask questions about documentation, features, and best practices.
                   </p>
-                  <p className="text-gray-500 text-sm">
-                    Use Cmd+Enter or Ctrl+Enter to send messages quickly
-                  </p>
+                  <div className="glass rounded-xl p-4 inline-block">
+                    <p className="text-gray-300 text-sm">
+                      💡 Tip: Use <kbd className="px-2 py-1 bg-white/10 rounded">Cmd+Enter</kbd> to send messages quickly
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -400,14 +418,15 @@ export default function ChatPage() {
           </div>
 
           {/* Input Area */}
-          <div className="bg-gray-800 border-t border-gray-700 p-4">
+          <div className="glass-dark border-t border-white/10 p-6">
             {error && (
-              <div className="mb-3 bg-red-500/20 border border-red-500 rounded p-2 text-sm text-red-200">
+              <div className="mb-4 bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-sm text-red-200 flex items-center gap-3">
+                <span className="text-xl">⚠️</span>
                 {error}
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <div className="flex-1 flex flex-col">
                 <textarea
                   value={inputValue}
@@ -415,25 +434,25 @@ export default function ChatPage() {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask a question... (Cmd+Enter to send)"
                   disabled={!selectedIDE || isResponseLoading}
-                  className="w-full px-4 py-3 rounded bg-gray-700 text-white placeholder-gray-500 disabled:opacity-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-5 py-4 rounded-xl glass text-white placeholder-gray-500 disabled:opacity-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-white/10 focus:border-blue-500/50 transition-all"
                   rows={3}
                 />
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!selectedIDE || isResponseLoading || !inputValue.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-3 rounded font-medium transition h-full"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white px-6 py-4 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 disabled:shadow-none h-full flex items-center justify-center"
                 >
-                  Send
+                  {isResponseLoading ? '⏳' : '🚀'} Send
                 </button>
                 {messages.length > 0 && (
                   <button
                     onClick={handleClearHistory}
                     disabled={isResponseLoading}
-                    className="bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded text-sm transition"
+                    className="glass hover:bg-white/10 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm transition-all border border-white/10 hover:border-white/20"
                   >
-                    Clear
+                    🗑️ Clear
                   </button>
                 )}
               </div>
@@ -447,7 +466,7 @@ export default function ChatPage() {
                     const ide = ides.find(i => i.id === e.target.value)
                     if (ide) handleIDEChange(ide)
                   }}
-                  className="w-full px-3 py-2 rounded bg-gray-700 text-white"
+                  className="w-full px-4 py-3 rounded-xl glass text-white border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 >
                   <option value="">Select an IDE...</option>
                   {ides.map(ide => (
