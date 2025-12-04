@@ -200,7 +200,7 @@ export default function Home() {
           {isGuest && (
             <div className="relative bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-400/30 rounded-2xl p-6 backdrop-blur-sm">
               <p className="text-blue-200 text-lg">
-                🎉 You're browsing as a guest. <Link href="/auth/signup" className="text-blue-300 hover:text-blue-100 underline font-semibold">Sign up now</Link> to save prompts and unlock all features.
+                🎉 You&apos;re browsing as a guest. <Link href="/auth/signup" className="text-blue-300 hover:text-blue-100 underline font-semibold">Sign up now</Link> to save prompts and unlock all features.
               </p>
             </div>
           )}
