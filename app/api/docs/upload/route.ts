@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, supabase } from '@/lib/supabase-client'
-import { generateEmbedding } from '@/lib/embeddings'
-import { chunkText } from '@/lib/chunker'
+import { EmbeddingService } from '@/lib/embeddings'
+import { chunkDocument } from '@/lib/chunker'
 import { parseDocument } from '@/lib/parser'
 import { crawlDocumentation } from '@/lib/crawler'
 
@@ -100,27 +100,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Chunk the content
-    const chunks = chunkText(content, {
-      maxChunkSize: 1000,
-      overlap: 200
+    const chunks = chunkDocument({
+      ideId: ide.id,
+      text: content,
+      sourceUrl,
+      version: 'latest'
+    }, {
+      maxTokens: 1000,
+      overlapTokens: 200
     })
 
-    // Generate embeddings and insert chunks
-    const chunkInserts = await Promise.all(
-      chunks.map(async (chunk, index) => {
-        const embedding = await generateEmbedding(chunk.text)
-        return {
-          ide_id: ide.id,
-          text: chunk.text,
-          embedding,
-          metadata: {
-            source: sourceUrl,
-            chunk_index: index,
-            total_chunks: chunks.length
-          }
-        }
-      })
+    // Generate embeddings
+    const embeddingService = new EmbeddingService({ userId: user.id })
+    const embeddingResults = await embeddingService.generateEmbeddings(
+      chunks.map(chunk => ({ id: chunk.ide_id, text: chunk.text }))
     )
+
+    // Prepare chunk inserts with embeddings
+    const chunkInserts = chunks.map((chunk, index) => {
+      const embeddingResult = embeddingResults.find(e => e.id === chunk.ide_id)
+      return {
+        ide_id: chunk.ide_id,
+        text: chunk.text,
+        embedding: embeddingResult?.embedding || null,
+        source_url: chunk.source_url,
+        section: chunk.section,
+        version: chunk.version
+      }
+    })
 
     const { error: chunksError } = await supabaseAdmin!
       .from('doc_chunks')

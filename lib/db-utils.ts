@@ -409,7 +409,7 @@ export class DatabaseManager {
   }
 }
 
-export default {
+const dbUtils = {
   IDEManager,
   DocChunkManager,
   UserPromptManager,
@@ -417,3 +417,5 @@ export default {
   AnalyticsManager,
   DatabaseManager
 }
+
+export default dbUtils

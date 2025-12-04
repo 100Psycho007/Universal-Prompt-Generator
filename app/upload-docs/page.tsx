@@ -214,7 +214,7 @@ export default function UploadDocsPage() {
                   className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <p className="mt-2 text-sm text-gray-400">
-                  We'll automatically crawl and extract documentation from this URL
+                  We&apos;ll automatically crawl and extract documentation from this URL
                 </p>
               </div>
             )}

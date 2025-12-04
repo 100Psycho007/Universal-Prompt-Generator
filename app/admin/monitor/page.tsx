@@ -59,7 +59,7 @@ export default function MonitorPage() {
       const interval = setInterval(fetchMonitoringData, refreshInterval)
       return () => clearInterval(interval)
     }
-  }, [isAdmin, isLoading, router, refreshInterval])
+  }, [isAdmin, isLoading, router, refreshInterval, fetchMonitoringData])
 
   const fetchMonitoringData = async () => {
     setLoading(true)

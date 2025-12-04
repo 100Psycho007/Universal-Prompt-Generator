@@ -221,7 +221,7 @@ export async function batchProcess<T, R>(
   return results
 }
 
-export default {
+const cronUtils = {
   verifyCronRequest,
   unauthorizedResponse,
   notifyFailure,
@@ -230,3 +230,5 @@ export default {
   calculateHash,
   batchProcess
 }
+
+export default cronUtils
