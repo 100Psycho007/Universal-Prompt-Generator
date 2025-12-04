@@ -30,3 +30,7 @@ Thumbs.db
 # Misc
 *.pem
 .vercel
+
+# Compiled JS files (we use TypeScript)
+lib/**/*.js
+!lib/**/*.config.js
