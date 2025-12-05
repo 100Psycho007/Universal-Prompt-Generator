@@ -71,11 +71,15 @@ export class RAGRetriever {
       { id: 'query', text: query }
     ])
     
-    if (embeddingResult.length === 0) {
+    if (embeddingResult.length === 0 || !embeddingResult[0]) {
       throw new Error('Failed to generate query embedding')
     }
 
     const queryEmbedding = embeddingResult[0].embedding
+    
+    if (!queryEmbedding || !Array.isArray(queryEmbedding) || queryEmbedding.length === 0) {
+      throw new Error('Generated embedding is invalid or empty')
+    }
 
     // Perform vector search
     const searchResult = await this.vectorSearch({

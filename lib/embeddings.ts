@@ -103,10 +103,13 @@ export class EmbeddingService {
       }
 
       const results = chunks
-        .filter((chunk) => orderedResults.has(chunk.id))
+        .filter((chunk) => {
+          const embedding = orderedResults.get(chunk.id)
+          return embedding && Array.isArray(embedding) && embedding.length > 0
+        })
         .map((chunk) => ({
           id: chunk.id,
-          embedding: orderedResults.get(chunk.id) ?? []
+          embedding: orderedResults.get(chunk.id)!
         }))
 
       const duration = Date.now() - startTime
@@ -136,6 +139,11 @@ export class EmbeddingService {
   private async embedBatch(texts: string[]): Promise<number[][]> {
     if (texts.length === 0) {
       return []
+    }
+
+    // Check if at least one provider is configured
+    if (!this.openRouterApiKey && !this.openAIApiKey) {
+      throw new Error('No embedding provider configured. Please set OPENROUTER_API_KEY or OPENAI_API_KEY in your environment variables.')
     }
 
     const providerErrors: Error[] = []
