@@ -106,7 +106,7 @@ export default function MonitorPage() {
       const interval = setInterval(fetchMonitoringData, refreshInterval)
       return () => clearInterval(interval)
     }
-  }, [isAdmin, isLoading, router, refreshInterval])
+  }, [isAdmin, isLoading, router, refreshInterval, fetchMonitoringData])
 
   const aggregateAPIMetrics = (stats: any[]): APIMetric[] => {
     const grouped = new Map<string, any[]>()

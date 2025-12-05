@@ -216,7 +216,7 @@ export default function ChatPage() {
     } finally {
       setIsResponseLoading(false)
     }
-  }, [inputValue, selectedIDE, conversationId, user, isGuest, isResponseLoading])
+  }, [inputValue, selectedIDE, conversationId, user, isGuest, isResponseLoading, incognitoMode])
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -421,7 +421,7 @@ export default function ChatPage() {
                 <span className="text-xl">🕶️</span>
                 <div>
                   <strong>Incognito Mode Active</strong>
-                  <p className="text-purple-300/80 text-xs mt-1">Your messages won't be saved to history</p>
+                  <p className="text-purple-300/80 text-xs mt-1">Your messages won&apos;t be saved to history</p>
                 </div>
               </div>
             )}
