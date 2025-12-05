@@ -108,9 +108,12 @@ export default function Home() {
                 PRD
               </Link>
               {!isGuest && (
-                <div className="text-gray-400 text-sm px-3">
+                <Link
+                  href="/profile"
+                  className="text-gray-400 hover:text-white text-sm px-3 py-2 glass rounded-lg hover:bg-white/5 transition-all"
+                >
                   {userProfile?.fullName || user?.email?.split('@')[0] || 'User'}
-                </div>
+                </Link>
               )}
               {isGuest ? (
                 <div className="flex gap-2">

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const { message, ideId, conversationId, userId } = await request.json()
+    const { message, ideId, conversationId, userId, incognito } = await request.json()
 
     if (!message || !ideId) {
       return NextResponse.json(
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
       })
     )
 
-    // Save chat history if conversation exists
-    if (conversationId && userId) {
+    // Save chat history if conversation exists and not in incognito mode
+    if (conversationId && userId && !incognito) {
       const userMessage: ChatMessage = {
         role: 'user',
         content: message,

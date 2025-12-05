@@ -31,6 +31,7 @@ export default function ChatPage() {
   const [showManifest, setShowManifest] = useState(false)
   const [manifest, setManifest] = useState<IDEManifest | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [incognitoMode, setIncognitoMode] = useState(false)
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function ChatPage() {
 
   // Load or create conversation
   useEffect(() => {
-    if (!user || isGuest || !selectedIDE || !supabase) return
+    if (!user || isGuest || !selectedIDE || !supabase || incognitoMode) return
 
     const loadConversation = async () => {
       try {
@@ -128,7 +129,7 @@ export default function ChatPage() {
     }
 
     loadConversation()
-  }, [user, selectedIDE, isGuest])
+  }, [user, selectedIDE, isGuest, incognitoMode])
 
   // Handle IDE selection
   const handleIDEChange = (ide: IDE) => {
@@ -178,8 +179,9 @@ export default function ChatPage() {
         body: JSON.stringify({
           message: text,
           ideId: selectedIDE.id,
-          conversationId,
-          userId: user?.id
+          conversationId: incognitoMode ? null : conversationId,
+          userId: user?.id,
+          incognito: incognitoMode
         })
       })
 
@@ -227,6 +229,12 @@ export default function ChatPage() {
   // Clear chat history
   const handleClearHistory = async () => {
     if (!confirm('Are you sure you want to clear this conversation?')) return
+    
+    if (incognitoMode) {
+      setMessages([])
+      return
+    }
+
     if (!supabase) return
 
     try {
@@ -240,6 +248,18 @@ export default function ChatPage() {
     } catch (err) {
       setError('Failed to clear history')
     }
+  }
+
+  // Toggle incognito mode
+  const handleToggleIncognito = () => {
+    if (!incognitoMode && messages.length > 0) {
+      if (!confirm('Switching to incognito mode will clear current messages. Continue?')) {
+        return
+      }
+    }
+    setIncognitoMode(!incognitoMode)
+    setMessages([])
+    setConversationId(null)
   }
 
   if (isLoading) {
@@ -318,9 +338,9 @@ export default function ChatPage() {
               <Link href="/" className="text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-white/5" >
                 Home
               </Link>
-              <span className="text-gray-400 text-sm px-3 py-2 glass rounded-lg">
+              <Link href="/profile" className="text-gray-400 hover:text-white text-sm px-3 py-2 glass rounded-lg hover:bg-white/5 transition-all">
                 {userProfile?.fullName || userProfile?.email || 'User'}
-              </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -364,6 +384,16 @@ export default function ChatPage() {
           {selectedIDE && (
             <>
               <button
+                onClick={handleToggleIncognito}
+                className={`w-full px-4 py-3 rounded-xl text-sm font-medium mb-4 transition-all border ${
+                  incognitoMode
+                    ? 'bg-purple-600/20 border-purple-500/50 text-purple-200 hover:bg-purple-600/30'
+                    : 'glass hover:bg-white/10 text-white border-white/10 hover:border-white/20'
+                }`}
+              >
+                {incognitoMode ? '🕶️ Incognito ON' : '🕶️ Incognito Mode'}
+              </button>
+              <button
                 onClick={() => setShowManifest(!showManifest)}
                 className="w-full glass hover:bg-white/10 text-white px-4 py-3 rounded-xl text-sm font-medium mb-4 transition-all border border-white/10 hover:border-white/20"
               >
@@ -386,6 +416,15 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-2">
+            {incognitoMode && (
+              <div className="mb-4 bg-purple-500/20 border border-purple-500/50 rounded-xl p-4 text-sm text-purple-200 flex items-center gap-3">
+                <span className="text-xl">🕶️</span>
+                <div>
+                  <strong>Incognito Mode Active</strong>
+                  <p className="text-purple-300/80 text-xs mt-1">Your messages won't be saved to history</p>
+                </div>
+              </div>
+            )}
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center max-w-2xl">
